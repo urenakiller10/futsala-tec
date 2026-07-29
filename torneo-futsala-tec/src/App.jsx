@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { initialData } from './data/initialData';
 import futsalaTecShield from './assets/futsala tec.jpeg';
 
-const STORAGE_KEY = 'torneo-futsala-tec-data';
+// Identificador único generado en cada deploy/build
+const BUILD_ID = import.meta.env.VITE_BUILD_ID || Date.now().toString();
+const STORAGE_KEY = 'torneo-futsala-tec-data-v2';
+const STORAGE_BUILD_KEY = 'torneo-futsala-tec-build';
+
 const ADMIN_PASSWORD = 'J123';
 
 const MOBILE_INITIAL_MATCHES = 2;
@@ -15,23 +19,17 @@ function App() {
   const [category, setCategory] = useState('masculino');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const [upcomingGroupFilter, setUpcomingGroupFilter] =
-    useState('all');
+  const [upcomingGroupFilter, setUpcomingGroupFilter] = useState('all');
+  const [playedGroupFilter, setPlayedGroupFilter] = useState('all');
 
-  const [playedGroupFilter, setPlayedGroupFilter] =
-    useState('all');
-
-  const [isAdminLoginOpen, setIsAdminLoginOpen] =
-    useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
 
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState('');
 
-  const [isMobileNavOpen, setIsMobileNavOpen] =
-    useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const [activeSection, setActiveSection] =
-    useState('inicio');
+  const [activeSection, setActiveSection] = useState('inicio');
 
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') {
@@ -41,23 +39,21 @@ function App() {
     return window.matchMedia('(max-width: 768px)').matches;
   });
 
-  const [
-    visibleUpcomingMatches,
-    setVisibleUpcomingMatches,
-  ] = useState(MOBILE_INITIAL_MATCHES);
+  const [visibleUpcomingMatches, setVisibleUpcomingMatches] = useState(MOBILE_INITIAL_MATCHES);
+  const [visiblePlayedMatches, setVisiblePlayedMatches] = useState(MOBILE_INITIAL_MATCHES);
+  const [visibleStandingsGroups, setVisibleStandingsGroups] = useState(MOBILE_INITIAL_GROUPS);
 
-  const [
-    visiblePlayedMatches,
-    setVisiblePlayedMatches,
-  ] = useState(MOBILE_INITIAL_MATCHES);
-
-  const [
-    visibleStandingsGroups,
-    setVisibleStandingsGroups,
-  ] = useState(MOBILE_INITIAL_GROUPS);
-
+  // Lógica inteligente: Si hay un nuevo deploy, limpia la memoria y carga initialData
   const [data, setData] = useState(() => {
+    const savedBuild = localStorage.getItem(STORAGE_BUILD_KEY);
     const savedData = localStorage.getItem(STORAGE_KEY);
+
+    // Si cambió el deploy/build, eliminamos datos viejos del navegador del usuario
+    if (savedBuild !== BUILD_ID) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_BUILD_KEY, BUILD_ID);
+      return initialData;
+    }
 
     if (savedData) {
       try {
@@ -73,31 +69,11 @@ function App() {
   const currentTournament = data[category];
 
   const mobileNavigationItems = [
-    {
-      id: 'inicio',
-      label: 'Inicio',
-      icon: '↑',
-    },
-    {
-      id: 'proximos',
-      label: 'Próximos',
-      icon: 'P',
-    },
-    {
-      id: 'jugados',
-      label: 'Jugados',
-      icon: 'J',
-    },
-    {
-      id: 'posiciones',
-      label: 'Posiciones',
-      icon: 'T',
-    },
-    {
-      id: 'goleadores',
-      label: 'Goleadores',
-      icon: 'G',
-    },
+    { id: 'inicio', label: 'Inicio', icon: '↑' },
+    { id: 'proximos', label: 'Próximos', icon: 'P' },
+    { id: 'jugados', label: 'Jugados', icon: 'J' },
+    { id: 'posiciones', label: 'Posiciones', icon: 'T' },
+    { id: 'goleadores', label: 'Goleadores', icon: 'G' },
     ...(category === 'masculino'
       ? [
           {
@@ -111,12 +87,11 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_BUILD_KEY, BUILD_ID);
   }, [data]);
 
   useEffect(() => {
-    const mobileMediaQuery = window.matchMedia(
-      '(max-width: 768px)',
-    );
+    const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
 
     function handleMobileChange(event) {
       setIsMobile(event.matches);
@@ -124,16 +99,10 @@ function App() {
 
     setIsMobile(mobileMediaQuery.matches);
 
-    mobileMediaQuery.addEventListener(
-      'change',
-      handleMobileChange,
-    );
+    mobileMediaQuery.addEventListener('change', handleMobileChange);
 
     return () => {
-      mobileMediaQuery.removeEventListener(
-        'change',
-        handleMobileChange,
-      );
+      mobileMediaQuery.removeEventListener('change', handleMobileChange);
     };
   }, []);
 
@@ -179,8 +148,7 @@ function App() {
           .filter((entry) => entry.isIntersecting)
           .sort(
             (firstEntry, secondEntry) =>
-              secondEntry.intersectionRatio -
-              firstEntry.intersectionRatio,
+              secondEntry.intersectionRatio - firstEntry.intersectionRatio,
           );
 
         if (visibleSections.length > 0) {
@@ -213,10 +181,9 @@ function App() {
     return [...new Set(groupNames)].sort();
   }, [currentTournament.teams]);
 
-  const displayedStandingsGroups =
-    isMobile && category === 'masculino'
-      ? groups.slice(0, visibleStandingsGroups)
-      : groups;
+  const displayedStandingsGroups = isMobile
+    ? groups.slice(0, visibleStandingsGroups)
+    : groups;
 
   const remainingStandingsGroups = Math.max(
     groups.length - visibleStandingsGroups,
@@ -224,66 +191,40 @@ function App() {
   );
 
   const upcomingMatches = useMemo(() => {
-    const filteredMatches =
-      currentTournament.matches.filter((match) => {
-        if (match.played) {
-          return false;
-        }
+    const filteredMatches = currentTournament.matches.filter((match) => {
+      if (match.played) {
+        return false;
+      }
 
-        if (
-          category !== 'masculino' ||
-          upcomingGroupFilter === 'all'
-        ) {
-          return true;
-        }
+      if (upcomingGroupFilter === 'all') {
+        return true;
+      }
 
-        return match.group === upcomingGroupFilter;
-      });
+      return match.group === upcomingGroupFilter;
+    });
 
-    return [...filteredMatches].sort(
-      (firstMatch, secondMatch) =>
-        compareMatchesByDate(
-          firstMatch,
-          secondMatch,
-          'ascending',
-        ),
+    return [...filteredMatches].sort((firstMatch, secondMatch) =>
+      compareMatchesByDate(firstMatch, secondMatch, 'ascending'),
     );
-  }, [
-    currentTournament.matches,
-    category,
-    upcomingGroupFilter,
-  ]);
+  }, [currentTournament.matches, upcomingGroupFilter]);
 
   const playedMatches = useMemo(() => {
-    const filteredMatches =
-      currentTournament.matches.filter((match) => {
-        if (!match.played) {
-          return false;
-        }
+    const filteredMatches = currentTournament.matches.filter((match) => {
+      if (!match.played) {
+        return false;
+      }
 
-        if (
-          category !== 'masculino' ||
-          playedGroupFilter === 'all'
-        ) {
-          return true;
-        }
+      if (playedGroupFilter === 'all') {
+        return true;
+      }
 
-        return match.group === playedGroupFilter;
-      });
+      return match.group === playedGroupFilter;
+    });
 
-    return [...filteredMatches].sort(
-      (firstMatch, secondMatch) =>
-        compareMatchesByDate(
-          firstMatch,
-          secondMatch,
-          'descending',
-        ),
+    return [...filteredMatches].sort((firstMatch, secondMatch) =>
+      compareMatchesByDate(firstMatch, secondMatch, 'descending'),
     );
-  }, [
-    currentTournament.matches,
-    category,
-    playedGroupFilter,
-  ]);
+  }, [currentTournament.matches, playedGroupFilter]);
 
   const displayedUpcomingMatches = isMobile
     ? upcomingMatches.slice(0, visibleUpcomingMatches)
@@ -353,8 +294,7 @@ function App() {
 
   function showMoreUpcomingMatches() {
     setVisibleUpcomingMatches(
-      (previousAmount) =>
-        previousAmount + MOBILE_MATCHES_STEP,
+      (previousAmount) => previousAmount + MOBILE_MATCHES_STEP,
     );
   }
 
@@ -373,8 +313,7 @@ function App() {
 
   function showMorePlayedMatches() {
     setVisiblePlayedMatches(
-      (previousAmount) =>
-        previousAmount + MOBILE_MATCHES_STEP,
+      (previousAmount) => previousAmount + MOBILE_MATCHES_STEP,
     );
   }
 
@@ -393,8 +332,7 @@ function App() {
 
   function showMoreStandingsGroups() {
     setVisibleStandingsGroups(
-      (previousAmount) =>
-        previousAmount + MOBILE_GROUPS_STEP,
+      (previousAmount) => previousAmount + MOBILE_GROUPS_STEP,
     );
   }
 
@@ -434,10 +372,7 @@ function App() {
     event.preventDefault();
 
     if (adminPassword !== ADMIN_PASSWORD) {
-      setAdminError(
-        'La contraseña ingresada es incorrecta.',
-      );
-
+      setAdminError('La contraseña ingresada es incorrecta.');
       return;
     }
 
@@ -452,13 +387,8 @@ function App() {
 
     const formData = new FormData(event.currentTarget);
 
-    const name = String(
-      formData.get('teamName') || '',
-    ).trim();
-
-    const group = String(
-      formData.get('teamGroup') || '',
-    )
+    const name = String(formData.get('teamName') || '').trim();
+    const group = String(formData.get('teamGroup') || '')
       .trim()
       .toUpperCase();
 
@@ -469,7 +399,7 @@ function App() {
     const newTeam = {
       id: Date.now(),
       name,
-      group: category === 'masculino' ? group || 'A' : '',
+      group: group || 'A',
     };
 
     updateTournament({
@@ -492,9 +422,7 @@ function App() {
     updateTournament({
       ...currentTournament,
 
-      teams: currentTournament.teams.filter(
-        (team) => team.id !== teamId,
-      ),
+      teams: currentTournament.teams.filter((team) => team.id !== teamId),
 
       matches: currentTournament.matches.filter(
         (match) =>
@@ -513,39 +441,18 @@ function App() {
 
     const formData = new FormData(event.currentTarget);
 
-    const homeTeam = String(
-      formData.get('homeTeam') || '',
-    );
-
-    const awayTeam = String(
-      formData.get('awayTeam') || '',
-    );
-
+    const homeTeam = String(formData.get('homeTeam') || '');
+    const awayTeam = String(formData.get('awayTeam') || '');
     const date = String(formData.get('date') || '');
+    const time = String(formData.get('time') || '').trim();
+    const week = String(formData.get('week') || '').trim();
+    const phase = String(formData.get('phase') || '').trim();
 
-    const time = String(
-      formData.get('time') || '',
-    ).trim();
-
-    const week = String(
-      formData.get('week') || '',
-    ).trim();
-
-    const phase = String(
-      formData.get('phase') || '',
-    ).trim();
-
-    const manuallySelectedGroup = String(
-      formData.get('group') || '',
-    )
+    const manuallySelectedGroup = String(formData.get('group') || '')
       .trim()
       .toUpperCase();
 
-    if (
-      !homeTeam ||
-      !awayTeam ||
-      homeTeam === awayTeam
-    ) {
+    if (!homeTeam || !awayTeam || homeTeam === awayTeam) {
       return;
     }
 
@@ -559,26 +466,18 @@ function App() {
 
     let matchGroup = '';
 
-    if (category === 'masculino') {
-      if (
-        homeTeamData?.group &&
-        homeTeamData.group === awayTeamData?.group
-      ) {
-        matchGroup = homeTeamData.group;
-      } else {
-        matchGroup = manuallySelectedGroup;
-      }
+    if (
+      homeTeamData?.group &&
+      homeTeamData.group === awayTeamData?.group
+    ) {
+      matchGroup = homeTeamData.group;
+    } else {
+      matchGroup = manuallySelectedGroup;
     }
 
     const newMatch = {
       id: Date.now(),
-
-      phase:
-        phase ||
-        (category === 'masculino'
-          ? 'Grupos'
-          : 'Todos contra todos'),
-
+      phase: phase || 'Grupos',
       week: week || 'Semana por definir',
       group: matchGroup,
       homeTeam,
@@ -592,27 +491,23 @@ function App() {
 
     updateTournament({
       ...currentTournament,
-      matches: [
-        ...currentTournament.matches,
-        newMatch,
-      ],
+      matches: [...currentTournament.matches, newMatch],
     });
 
     event.currentTarget.reset();
   }
 
   function updateMatch(matchId, field, value) {
-    const updatedMatches =
-      currentTournament.matches.map((match) => {
-        if (match.id !== matchId) {
-          return match;
-        }
+    const updatedMatches = currentTournament.matches.map((match) => {
+      if (match.id !== matchId) {
+        return match;
+      }
 
-        return {
-          ...match,
-          [field]: value,
-        };
-      });
+      return {
+        ...match,
+        [field]: value,
+      };
+    });
 
     updateTournament({
       ...currentTournament,
@@ -621,38 +516,34 @@ function App() {
   }
 
   function saveResult(matchId) {
-    const updatedMatches =
-      currentTournament.matches.map((match) => {
-        if (match.id !== matchId) {
-          return match;
-        }
+    const updatedMatches = currentTournament.matches.map((match) => {
+      if (match.id !== matchId) {
+        return match;
+      }
 
-        if (
-          match.homeScore === '' ||
-          match.awayScore === ''
-        ) {
-          return match;
-        }
+      if (match.homeScore === '' || match.awayScore === '') {
+        return match;
+      }
 
-        const homeScore = Number(match.homeScore);
-        const awayScore = Number(match.awayScore);
+      const homeScore = Number(match.homeScore);
+      const awayScore = Number(match.awayScore);
 
-        if (
-          Number.isNaN(homeScore) ||
-          Number.isNaN(awayScore) ||
-          homeScore < 0 ||
-          awayScore < 0
-        ) {
-          return match;
-        }
+      if (
+        Number.isNaN(homeScore) ||
+        Number.isNaN(awayScore) ||
+        homeScore < 0 ||
+        awayScore < 0
+      ) {
+        return match;
+      }
 
-        return {
-          ...match,
-          homeScore,
-          awayScore,
-          played: true,
-        };
-      });
+      return {
+        ...match,
+        homeScore,
+        awayScore,
+        played: true,
+      };
+    });
 
     updateTournament({
       ...currentTournament,
@@ -661,19 +552,18 @@ function App() {
   }
 
   function markAsPending(matchId) {
-    const updatedMatches =
-      currentTournament.matches.map((match) => {
-        if (match.id !== matchId) {
-          return match;
-        }
+    const updatedMatches = currentTournament.matches.map((match) => {
+      if (match.id !== matchId) {
+        return match;
+      }
 
-        return {
-          ...match,
-          played: false,
-          homeScore: '',
-          awayScore: '',
-        };
-      });
+      return {
+        ...match,
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      };
+    });
 
     updateTournament({
       ...currentTournament,
@@ -685,9 +575,7 @@ function App() {
     updateTournament({
       ...currentTournament,
 
-      matches: currentTournament.matches.filter(
-        (match) => match.id !== matchId,
-      ),
+      matches: currentTournament.matches.filter((match) => match.id !== matchId),
     });
   }
 
@@ -696,47 +584,33 @@ function App() {
 
     const formData = new FormData(event.currentTarget);
 
-    const name = String(
-      formData.get('scorerName') || '',
-    ).trim();
-
-    const team = String(
-      formData.get('scorerTeam') || '',
-    );
-
+    const name = String(formData.get('scorerName') || '').trim();
+    const team = String(formData.get('scorerTeam') || '');
     const goals = Number(formData.get('goals'));
 
-    if (
-      !name ||
-      !team ||
-      Number.isNaN(goals) ||
-      goals < 1
-    ) {
+    if (!name || !team || Number.isNaN(goals) || goals < 1) {
       return;
     }
 
-    const existingScorer =
-      currentTournament.scorers.find(
-        (scorer) =>
-          scorer.name.toLowerCase() ===
-            name.toLowerCase() &&
-          scorer.team === team,
-      );
+    const existingScorer = currentTournament.scorers.find(
+      (scorer) =>
+        scorer.name.toLowerCase() === name.toLowerCase() &&
+        scorer.team === team,
+    );
 
     let updatedScorers;
 
     if (existingScorer) {
-      updatedScorers =
-        currentTournament.scorers.map((scorer) => {
-          if (scorer.id !== existingScorer.id) {
-            return scorer;
-          }
+      updatedScorers = currentTournament.scorers.map((scorer) => {
+        if (scorer.id !== existingScorer.id) {
+          return scorer;
+        }
 
-          return {
-            ...scorer,
-            goals: scorer.goals + goals,
-          };
-        });
+        return {
+          ...scorer,
+          goals: scorer.goals + goals,
+        };
+      });
     } else {
       updatedScorers = [
         ...currentTournament.scorers,
@@ -778,6 +652,7 @@ function App() {
 
     setData(initialData);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_BUILD_KEY);
 
     setUpcomingGroupFilter('all');
     setPlayedGroupFilter('all');
@@ -787,13 +662,34 @@ function App() {
     setVisibleStandingsGroups(MOBILE_INITIAL_GROUPS);
   }
 
+  const getGroupStyle = (group) => {
+    const isGroupA = group.toUpperCase() === 'A';
+    return {
+      borderLeft: `5px solid ${isGroupA ? '#2563eb' : '#7c3aed'}`,
+      backgroundColor: isGroupA ? 'rgba(37, 99, 235, 0.03)' : 'rgba(124, 58, 237, 0.03)',
+      padding: '1rem',
+      borderRadius: '8px',
+      marginBottom: '1.5rem',
+    };
+  };
+
+  const getGroupHeaderStyle = (group) => {
+    const isGroupA = group.toUpperCase() === 'A';
+    return {
+      color: isGroupA ? '#1d4ed8' : '#6d28d9',
+      marginTop: 0,
+      marginBottom: '0.75rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+    };
+  };
+
   return (
     <main className="app">
       <section className="hero" id="inicio">
         <div className="hero__content">
-          <p className="hero__eyebrow">
-            Tecnológico de Costa Rica
-          </p>
+          <p className="hero__eyebrow">Tecnológico de Costa Rica</p>
 
           <div className="hero__title-row">
             <img
@@ -802,14 +698,12 @@ function App() {
               alt="Escudo de Futsala TEC"
             />
 
-            <h1 className="hero__title">
-              Torneo Interno de Futsala TEC
-            </h1>
+            <h1 className="hero__title">Torneo Interno de Futsala TEC</h1>
           </div>
 
           <p className="hero__text">
-            Consulte partidos, resultados, tablas de
-            posiciones y goleadores del torneo interno.
+            Consulte partidos, resultados, tablas de posiciones y goleadores
+            del torneo interno.
           </p>
 
           <div className="hero__actions">
@@ -818,9 +712,7 @@ function App() {
                 category === 'masculino' ? 'active' : ''
               }`}
               type="button"
-              onClick={() =>
-                changeCategory('masculino')
-              }
+              onClick={() => changeCategory('masculino')}
             >
               Masculino
             </button>
@@ -846,26 +738,17 @@ function App() {
 
         <div className="tournament-header__stats">
           <article>
-            <strong>
-              {currentTournament.teams.length}
-            </strong>
-
+            <strong>{currentTournament.teams.length}</strong>
             <span>Equipos</span>
           </article>
 
           <article>
-            <strong>
-              {currentTournament.matches.length}
-            </strong>
-
+            <strong>{currentTournament.matches.length}</strong>
             <span>Partidos</span>
           </article>
 
           <article>
-            <strong>
-              {currentTournament.scorers.length}
-            </strong>
-
+            <strong>{currentTournament.scorers.length}</strong>
             <span>Goleadores</span>
           </article>
         </div>
@@ -879,15 +762,11 @@ function App() {
           </div>
 
           <div className="admin-grid">
-            <form
-              className="admin-form"
-              onSubmit={addTeam}
-            >
+            <form className="admin-form" onSubmit={addTeam}>
               <h3>Agregar equipo</h3>
 
               <label>
                 Nombre del equipo
-
                 <input
                   name="teamName"
                   type="text"
@@ -895,76 +774,48 @@ function App() {
                 />
               </label>
 
-              {category === 'masculino' && (
-                <label>
-                  Grupo
+              <label>
+                Grupo
+                <input
+                  name="teamGroup"
+                  type="text"
+                  placeholder="Ej: A"
+                  maxLength="1"
+                />
+              </label>
 
-                  <input
-                    name="teamGroup"
-                    type="text"
-                    placeholder="Ej: A"
-                    maxLength="1"
-                  />
-                </label>
-              )}
-
-              <button type="submit">
-                Agregar equipo
-              </button>
+              <button type="submit">Agregar equipo</button>
             </form>
 
-            <form
-              className="admin-form"
-              onSubmit={addMatch}
-            >
+            <form className="admin-form" onSubmit={addMatch}>
               <h3>Agregar partido</h3>
 
               <div className="form-row">
                 <label>
                   Local
-
-                  <select
-                    name="homeTeam"
-                    defaultValue=""
-                  >
+                  <select name="homeTeam" defaultValue="">
                     <option value="" disabled>
                       Seleccione
                     </option>
-
-                    {currentTournament.teams.map(
-                      (team) => (
-                        <option
-                          key={team.id}
-                          value={team.name}
-                        >
-                          {team.name}
-                        </option>
-                      ),
-                    )}
+                    {currentTournament.teams.map((team) => (
+                      <option key={team.id} value={team.name}>
+                        {team.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
 
                 <label>
                   Visitante
-
-                  <select
-                    name="awayTeam"
-                    defaultValue=""
-                  >
+                  <select name="awayTeam" defaultValue="">
                     <option value="" disabled>
                       Seleccione
                     </option>
-
-                    {currentTournament.teams.map(
-                      (team) => (
-                        <option
-                          key={team.id}
-                          value={team.name}
-                        >
-                          {team.name}
-                        </option>
-                      ),
-                    )}
+                    {currentTournament.teams.map((team) => (
+                      <option key={team.id} value={team.name}>
+                        {team.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -972,7 +823,6 @@ function App() {
               <div className="form-row">
                 <label>
                   Semana o jornada
-
                   <input
                     name="week"
                     type="text"
@@ -982,18 +832,13 @@ function App() {
 
                 <label>
                   Fecha
-
-                  <input
-                    name="date"
-                    type="date"
-                  />
+                  <input name="date" type="date" />
                 </label>
               </div>
 
               <div className="form-row">
                 <label>
                   Hora
-
                   <input
                     name="time"
                     type="text"
@@ -1003,46 +848,32 @@ function App() {
 
                 <label>
                   Fase
-
                   <input
                     name="phase"
                     type="text"
-                    placeholder={
-                      category === 'masculino'
-                        ? 'Grupos'
-                        : 'Todos contra todos'
-                    }
+                    placeholder="Grupos"
                   />
                 </label>
               </div>
 
-              {category === 'masculino' && (
-                <label>
-                  Grupo
+              <label>
+                Grupo
+                <input
+                  name="group"
+                  type="text"
+                  placeholder="Ej: A"
+                  maxLength="1"
+                />
+              </label>
 
-                  <input
-                    name="group"
-                    type="text"
-                    placeholder="Ej: A"
-                    maxLength="1"
-                  />
-                </label>
-              )}
-
-              <button type="submit">
-                Agregar partido
-              </button>
+              <button type="submit">Agregar partido</button>
             </form>
 
-            <form
-              className="admin-form"
-              onSubmit={addScorer}
-            >
+            <form className="admin-form" onSubmit={addScorer}>
               <h3>Agregar goles</h3>
 
               <label>
                 Nombre del jugador
-
                 <input
                   name="scorerName"
                   type="text"
@@ -1052,31 +883,20 @@ function App() {
 
               <label>
                 Equipo
-
-                <select
-                  name="scorerTeam"
-                  defaultValue=""
-                >
+                <select name="scorerTeam" defaultValue="">
                   <option value="" disabled>
                     Seleccione
                   </option>
-
-                  {currentTournament.teams.map(
-                    (team) => (
-                      <option
-                        key={team.id}
-                        value={team.name}
-                      >
-                        {team.name}
-                      </option>
-                    ),
-                  )}
+                  {currentTournament.teams.map((team) => (
+                    <option key={team.id} value={team.name}>
+                      {team.name}
+                    </option>
+                  ))}
                 </select>
               </label>
 
               <label>
                 Goles
-
                 <input
                   name="goals"
                   type="number"
@@ -1085,9 +905,7 @@ function App() {
                 />
               </label>
 
-              <button type="submit">
-                Agregar goles
-              </button>
+              <button type="submit">Agregar goles</button>
             </form>
           </div>
 
@@ -1096,24 +914,14 @@ function App() {
 
             <div className="team-chips">
               {currentTournament.teams.map((team) => (
-                <span
-                  className="team-chip"
-                  key={team.id}
-                >
+                <span className="team-chip" key={team.id}>
                   {team.name}
-
-                  {team.group && (
-                    <small>
-                      Grupo {team.group}
-                    </small>
-                  )}
+                  {team.group && <small>Grupo {team.group}</small>}
 
                   <button
                     type="button"
                     aria-label={`Eliminar ${team.name}`}
-                    onClick={() =>
-                      deleteTeam(team.id)
-                    }
+                    onClick={() => deleteTeam(team.id)}
                   >
                     ×
                   </button>
@@ -1133,44 +941,33 @@ function App() {
       )}
 
       <section className="content-grid">
-        <section
-          className="card navigation-section"
-          id="proximos"
-        >
+        <section className="card navigation-section" id="proximos">
           <div className="section-header">
             <div className="section-title">
               <p>Calendario</p>
               <h2>Próximos partidos</h2>
             </div>
 
-            {category === 'masculino' &&
-              groups.length > 0 && (
-                <label className="group-filter">
-                  <span>Grupo</span>
+            {groups.length > 0 && (
+              <label className="group-filter">
+                <span>Grupo</span>
 
-                  <select
-                    value={upcomingGroupFilter}
-                    onChange={(event) =>
-                      setUpcomingGroupFilter(
-                        event.target.value,
-                      )
-                    }
-                  >
-                    <option value="all">
-                      Todos
+                <select
+                  value={upcomingGroupFilter}
+                  onChange={(event) =>
+                    setUpcomingGroupFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Todos</option>
+
+                  {groups.map((group) => (
+                    <option key={group} value={group}>
+                      Grupo {group}
                     </option>
-
-                    {groups.map((group) => (
-                      <option
-                        key={group}
-                        value={group}
-                      >
-                        Grupo {group}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
 
           <div className="match-list">
@@ -1182,31 +979,26 @@ function App() {
               </p>
             )}
 
-            {displayedUpcomingMatches.map(
-              (match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  isAdmin={isAdmin}
-                  onUpdate={updateMatch}
-                  onSave={saveResult}
-                  onPending={markAsPending}
-                  onDelete={deleteMatch}
-                />
-              ),
-            )}
+            {displayedUpcomingMatches.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                isAdmin={isAdmin}
+                onUpdate={updateMatch}
+                onSave={saveResult}
+                onPending={markAsPending}
+                onDelete={deleteMatch}
+              />
+            ))}
 
             {isMobile &&
-              upcomingMatches.length >
-                MOBILE_INITIAL_MATCHES && (
+              upcomingMatches.length > MOBILE_INITIAL_MATCHES && (
                 <div className="match-list__actions">
                   {remainingUpcomingMatches > 0 ? (
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={
-                        showMoreUpcomingMatches
-                      }
+                      onClick={showMoreUpcomingMatches}
                     >
                       Ver{' '}
                       {Math.min(
@@ -1219,9 +1011,7 @@ function App() {
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={
-                        showLessUpcomingMatches
-                      }
+                      onClick={showLessUpcomingMatches}
                     >
                       Ver menos
                     </button>
@@ -1231,44 +1021,33 @@ function App() {
           </div>
         </section>
 
-        <section
-          className="card navigation-section"
-          id="jugados"
-        >
+        <section className="card navigation-section" id="jugados">
           <div className="section-header">
             <div className="section-title">
               <p>Resultados</p>
               <h2>Partidos jugados</h2>
             </div>
 
-            {category === 'masculino' &&
-              groups.length > 0 && (
-                <label className="group-filter">
-                  <span>Grupo</span>
+            {groups.length > 0 && (
+              <label className="group-filter">
+                <span>Grupo</span>
 
-                  <select
-                    value={playedGroupFilter}
-                    onChange={(event) =>
-                      setPlayedGroupFilter(
-                        event.target.value,
-                      )
-                    }
-                  >
-                    <option value="all">
-                      Todos
+                <select
+                  value={playedGroupFilter}
+                  onChange={(event) =>
+                    setPlayedGroupFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Todos</option>
+
+                  {groups.map((group) => (
+                    <option key={group} value={group}>
+                      Grupo {group}
                     </option>
-
-                    {groups.map((group) => (
-                      <option
-                        key={group}
-                        value={group}
-                      >
-                        Grupo {group}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
 
           <div className="match-list">
@@ -1280,23 +1059,20 @@ function App() {
               </p>
             )}
 
-            {displayedPlayedMatches.map(
-              (match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  isAdmin={isAdmin}
-                  onUpdate={updateMatch}
-                  onSave={saveResult}
-                  onPending={markAsPending}
-                  onDelete={deleteMatch}
-                />
-              ),
-            )}
+            {displayedPlayedMatches.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                isAdmin={isAdmin}
+                onUpdate={updateMatch}
+                onSave={saveResult}
+                onPending={markAsPending}
+                onDelete={deleteMatch}
+              />
+            ))}
 
             {isMobile &&
-              playedMatches.length >
-                MOBILE_INITIAL_MATCHES && (
+              playedMatches.length > MOBILE_INITIAL_MATCHES && (
                 <div className="match-list__actions">
                   {remainingPlayedMatches > 0 ? (
                     <button
@@ -1336,72 +1112,64 @@ function App() {
             <h2>Tabla de posiciones</h2>
           </div>
 
-          {category === 'masculino' &&
-          groups.length > 0 ? (
+          {groups.length > 0 ? (
             <>
               {displayedStandingsGroups.map((group) => (
                 <div
                   className={`table-block table-block--group-${group.toLowerCase()}`}
+                  style={getGroupStyle(group)}
                   key={group}
                 >
-                  <h3>Grupo {group}</h3>
+                  <h3 style={getGroupHeaderStyle(group)}>
+                    Grupo {group}
+                  </h3>
 
                   <StandingsTable
                     standings={standings.filter(
-                      (row) =>
-                        row.team.group === group,
+                      (row) => row.team.group === group,
                     )}
                   />
                 </div>
               ))}
 
-              {isMobile &&
-                groups.length >
-                  MOBILE_INITIAL_GROUPS && (
-                  <div className="standings-groups__actions">
-                    {remainingStandingsGroups > 0 ? (
-                      <button
-                        className="show-more-button"
-                        type="button"
-                        onClick={
-                          showMoreStandingsGroups
-                        }
-                      >
-                        Ver{' '}
-                        {Math.min(
-                          MOBILE_GROUPS_STEP,
-                          remainingStandingsGroups,
-                        )}{' '}
-                        {Math.min(
-                          MOBILE_GROUPS_STEP,
-                          remainingStandingsGroups,
-                        ) === 1
-                          ? 'grupo más'
-                          : 'grupos más'}
-                      </button>
-                    ) : (
-                      <button
-                        className="show-more-button"
-                        type="button"
-                        onClick={
-                          showLessStandingsGroups
-                        }
-                      >
-                        Ver menos
-                      </button>
-                    )}
-                  </div>
-                )}
+              {isMobile && groups.length > MOBILE_INITIAL_GROUPS && (
+                <div className="standings-groups__actions">
+                  {remainingStandingsGroups > 0 ? (
+                    <button
+                      className="show-more-button"
+                      type="button"
+                      onClick={showMoreStandingsGroups}
+                    >
+                      Ver{' '}
+                      {Math.min(
+                        MOBILE_GROUPS_STEP,
+                        remainingStandingsGroups,
+                      )}{' '}
+                      {Math.min(
+                        MOBILE_GROUPS_STEP,
+                        remainingStandingsGroups,
+                      ) === 1
+                        ? 'grupo más'
+                        : 'grupos más'}
+                    </button>
+                  ) : (
+                    <button
+                      className="show-more-button"
+                      type="button"
+                      onClick={showLessStandingsGroups}
+                    >
+                      Ver menos
+                    </button>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <StandingsTable standings={standings} />
           )}
         </section>
 
-        <section
-          className="card navigation-section"
-          id="goleadores"
-        >
+        <section className="card navigation-section" id="goleadores">
           <div className="section-title">
             <p>Ranking</p>
             <h2>Goleadores</h2>
@@ -1416,10 +1184,7 @@ function App() {
       </section>
 
       {category === 'masculino' && (
-        <section
-          className="card navigation-section"
-          id="eliminatorias"
-        >
+        <section className="card navigation-section" id="eliminatorias">
           <div className="section-title">
             <p>Fase final</p>
             <h2>Eliminatorias</h2>
@@ -1428,9 +1193,7 @@ function App() {
           <div className="knockout-grid">
             {currentTournament.matches
               .filter(
-                (match) =>
-                  match.phase.toLowerCase() !==
-                  'grupos',
+                (match) => match.phase.toLowerCase() !== 'grupos',
               )
               .map((match) => (
                 <MatchCard
@@ -1454,32 +1217,24 @@ function App() {
         aria-label="Navegación rápida"
       >
         <div className="mobile-quick-nav__panel">
-          {mobileNavigationItems.map(
-            (navigationItem) => (
-              <button
-                className={`mobile-quick-nav__item ${
-                  activeSection === navigationItem.id
-                    ? 'is-active'
-                    : ''
-                }`}
-                type="button"
-                key={navigationItem.id}
-                onClick={() =>
-                  scrollToSection(
-                    navigationItem.id,
-                  )
-                }
-              >
-                <span className="mobile-quick-nav__icon">
-                  {navigationItem.icon}
-                </span>
+          {mobileNavigationItems.map((navigationItem) => (
+            <button
+              className={`mobile-quick-nav__item ${
+                activeSection === navigationItem.id ? 'is-active' : ''
+              }`}
+              type="button"
+              key={navigationItem.id}
+              onClick={() => scrollToSection(navigationItem.id)}
+            >
+              <span className="mobile-quick-nav__icon">
+                {navigationItem.icon}
+              </span>
 
-                <span className="mobile-quick-nav__label">
-                  {navigationItem.label}
-                </span>
-              </button>
-            ),
-          )}
+              <span className="mobile-quick-nav__label">
+                {navigationItem.label}
+              </span>
+            </button>
+          ))}
         </div>
 
         <button
@@ -1492,21 +1247,15 @@ function App() {
           }
           aria-expanded={isMobileNavOpen}
           onClick={() =>
-            setIsMobileNavOpen(
-              (previousState) => !previousState,
-            )
+            setIsMobileNavOpen((previousState) => !previousState)
           }
         >
-          <span aria-hidden="true">
-            {isMobileNavOpen ? '×' : '☰'}
-          </span>
+          <span aria-hidden="true">{isMobileNavOpen ? '×' : '☰'}</span>
         </button>
       </nav>
 
       <button
-        className={`admin-access-button ${
-          isAdmin ? 'is-active' : ''
-        }`}
+        className={`admin-access-button ${isAdmin ? 'is-active' : ''}`}
         type="button"
         title={
           isAdmin
@@ -1528,17 +1277,12 @@ function App() {
           className="admin-login-backdrop"
           role="presentation"
           onMouseDown={(event) => {
-            if (
-              event.target === event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeAdminLogin();
             }
           }}
         >
-          <form
-            className="admin-login"
-            onSubmit={loginAsAdmin}
-          >
+          <form className="admin-login" onSubmit={loginAsAdmin}>
             <button
               className="admin-login__close"
               type="button"
@@ -1548,45 +1292,33 @@ function App() {
               ×
             </button>
 
-            <p className="admin-login__eyebrow">
-              Acceso restringido
-            </p>
+            <p className="admin-login__eyebrow">Acceso restringido</p>
 
             <h2>Modo administrador</h2>
 
             <p className="admin-login__description">
-              Ingrese la contraseña para administrar los
-              datos del torneo.
+              Ingrese la contraseña para administrar los datos del torneo.
             </p>
 
             <label>
               Contraseña
-
               <input
                 type="password"
                 value={adminPassword}
                 autoFocus
                 autoComplete="current-password"
                 onChange={(event) => {
-                  setAdminPassword(
-                    event.target.value,
-                  );
-
+                  setAdminPassword(event.target.value);
                   setAdminError('');
                 }}
               />
             </label>
 
             {adminError && (
-              <p className="admin-login__error">
-                {adminError}
-              </p>
+              <p className="admin-login__error">{adminError}</p>
             )}
 
-            <button
-              className="admin-login__submit"
-              type="submit"
-            >
+            <button className="admin-login__submit" type="submit">
               Entrar
             </button>
           </form>
@@ -1609,18 +1341,12 @@ function MatchCard({
     : 'general';
 
   return (
-    <article
-      className={`match-card match-card--group-${normalizedGroup}`}
-    >
+    <article className={`match-card match-card--group-${normalizedGroup}`}>
       <div className="match-card__top">
-        <span className="match-card__phase">
-          {match.phase}
-        </span>
+        <span className="match-card__phase">{match.phase}</span>
 
         {match.group && (
-          <span className="match-card__group">
-            Grupo {match.group}
-          </span>
+          <span className="match-card__group">Grupo {match.group}</span>
         )}
       </div>
 
@@ -1636,11 +1362,7 @@ function MatchCard({
                 value={match.homeScore}
                 aria-label={`Marcador de ${match.homeTeam}`}
                 onChange={(event) =>
-                  onUpdate(
-                    match.id,
-                    'homeScore',
-                    event.target.value,
-                  )
+                  onUpdate(match.id, 'homeScore', event.target.value)
                 }
               />
 
@@ -1652,11 +1374,7 @@ function MatchCard({
                 value={match.awayScore}
                 aria-label={`Marcador de ${match.awayTeam}`}
                 onChange={(event) =>
-                  onUpdate(
-                    match.id,
-                    'awayScore',
-                    event.target.value,
-                  )
+                  onUpdate(match.id, 'awayScore', event.target.value)
                 }
               />
             </>
@@ -1679,24 +1397,16 @@ function MatchCard({
 
         <span>{formatDate(match.date)}</span>
 
-        <span>
-          {match.time || 'Hora por definir'}
-        </span>
+        <span>{match.time || 'Hora por definir'}</span>
       </div>
 
       {isAdmin && (
         <div className="match-card__admin">
-          <button
-            type="button"
-            onClick={() => onSave(match.id)}
-          >
+          <button type="button" onClick={() => onSave(match.id)}>
             Guardar resultado
           </button>
 
-          <button
-            type="button"
-            onClick={() => onPending(match.id)}
-          >
+          <button type="button" onClick={() => onPending(match.id)}>
             Marcar pendiente
           </button>
 
@@ -1754,14 +1464,9 @@ function StandingsTable({ standings }) {
   );
 }
 
-function ScorersTable({
-  scorers,
-  isAdmin,
-  onDelete,
-}) {
+function ScorersTable({ scorers, isAdmin, onDelete }) {
   const sortedScorers = [...scorers].sort(
-    (firstScorer, secondScorer) =>
-      secondScorer.goals - firstScorer.goals,
+    (firstScorer, secondScorer) => secondScorer.goals - firstScorer.goals,
   );
 
   return (
@@ -1773,22 +1478,15 @@ function ScorersTable({
       )}
 
       {sortedScorers.map((scorer, index) => (
-        <article
-          className="scorer-row"
-          key={scorer.id}
-        >
-          <span className="scorer-row__position">
-            #{index + 1}
-          </span>
+        <article className="scorer-row" key={scorer.id}>
+          <span className="scorer-row__position">#{index + 1}</span>
 
           <div>
             <strong>{scorer.name}</strong>
             <p>{scorer.team}</p>
           </div>
 
-          <span className="scorer-row__goals">
-            {scorer.goals}
-          </span>
+          <span className="scorer-row__goals">{scorer.goals}</span>
 
           {isAdmin && (
             <button
@@ -1836,10 +1534,7 @@ function calculateStandings(teams, matches) {
       const homeScore = Number(match.homeScore);
       const awayScore = Number(match.awayScore);
 
-      if (
-        Number.isNaN(homeScore) ||
-        Number.isNaN(awayScore)
-      ) {
+      if (Number.isNaN(homeScore) || Number.isNaN(awayScore)) {
         return;
       }
 
@@ -1872,45 +1567,26 @@ function calculateStandings(teams, matches) {
   return rows
     .map((row) => ({
       ...row,
-      goalDifference:
-        row.goalsFor - row.goalsAgainst,
+      goalDifference: row.goalsFor - row.goalsAgainst,
     }))
     .sort((firstRow, secondRow) => {
       if (secondRow.points !== firstRow.points) {
         return secondRow.points - firstRow.points;
       }
 
-      if (
-        secondRow.goalDifference !==
-        firstRow.goalDifference
-      ) {
-        return (
-          secondRow.goalDifference -
-          firstRow.goalDifference
-        );
+      if (secondRow.goalDifference !== firstRow.goalDifference) {
+        return secondRow.goalDifference - firstRow.goalDifference;
       }
 
-      return (
-        secondRow.goalsFor - firstRow.goalsFor
-      );
+      return secondRow.goalsFor - firstRow.goalsFor;
     });
 }
 
-function compareMatchesByDate(
-  firstMatch,
-  secondMatch,
-  direction,
-) {
-  const firstTimestamp =
-    getMatchTimestamp(firstMatch);
+function compareMatchesByDate(firstMatch, secondMatch, direction) {
+  const firstTimestamp = getMatchTimestamp(firstMatch);
+  const secondTimestamp = getMatchTimestamp(secondMatch);
 
-  const secondTimestamp =
-    getMatchTimestamp(secondMatch);
-
-  if (
-    firstTimestamp === null &&
-    secondTimestamp === null
-  ) {
+  if (firstTimestamp === null && secondTimestamp === null) {
     return 0;
   }
 
@@ -1934,19 +1610,11 @@ function getMatchTimestamp(match) {
     return null;
   }
 
-  const normalizedTime = normalizeMatchTime(
-    match.time,
-  );
-
-  const date = new Date(
-    `${match.date}T${normalizedTime}`,
-  );
-
+  const normalizedTime = normalizeMatchTime(match.time);
+  const date = new Date(`${match.date}T${normalizedTime}`);
   const timestamp = date.getTime();
 
-  return Number.isNaN(timestamp)
-    ? null
-    : timestamp;
+  return Number.isNaN(timestamp) ? null : timestamp;
 }
 
 function normalizeMatchTime(timeValue) {
@@ -1959,16 +1627,13 @@ function normalizeMatchTime(timeValue) {
     .replace(/\./g, '')
     .replace(/\s/g, '');
 
-  const timeMatch = normalizedValue.match(
-    /^(\d{1,2}):(\d{2})(am|pm)?$/,
-  );
+  const timeMatch = normalizedValue.match(/^(\d{1,2}):(\d{2})(am|pm)?$/);
 
   if (!timeMatch) {
     return '00:00:00';
   }
 
   let hours = Number(timeMatch[1]);
-
   const minutes = Number(timeMatch[2]);
   const period = timeMatch[3];
 
@@ -1980,10 +1645,7 @@ function normalizeMatchTime(timeValue) {
     hours = 0;
   }
 
-  return `${String(hours).padStart(
-    2,
-    '0',
-  )}:${String(minutes).padStart(2, '0')}:00`;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
 }
 
 function formatDate(dateValue) {
