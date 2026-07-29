@@ -4,7 +4,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 
 // Identificador único generado en cada deploy/build
 const BUILD_ID = import.meta.env.VITE_BUILD_ID || Date.now().toString();
-const STORAGE_KEY = 'torneo-futsala-tec-data-v2';
+const STORAGE_KEY = 'torneo-futsala-tec-data-v3';
 const STORAGE_BUILD_KEY = 'torneo-futsala-tec-build';
 
 const ADMIN_PASSWORD = 'J123';
@@ -196,7 +196,7 @@ function App() {
         return false;
       }
 
-      if (upcomingGroupFilter === 'all') {
+      if (groups.length === 0 || upcomingGroupFilter === 'all') {
         return true;
       }
 
@@ -206,7 +206,7 @@ function App() {
     return [...filteredMatches].sort((firstMatch, secondMatch) =>
       compareMatchesByDate(firstMatch, secondMatch, 'ascending'),
     );
-  }, [currentTournament.matches, upcomingGroupFilter]);
+  }, [currentTournament.matches, upcomingGroupFilter, groups]);
 
   const playedMatches = useMemo(() => {
     const filteredMatches = currentTournament.matches.filter((match) => {
@@ -214,7 +214,7 @@ function App() {
         return false;
       }
 
-      if (playedGroupFilter === 'all') {
+      if (groups.length === 0 || playedGroupFilter === 'all') {
         return true;
       }
 
@@ -224,7 +224,7 @@ function App() {
     return [...filteredMatches].sort((firstMatch, secondMatch) =>
       compareMatchesByDate(firstMatch, secondMatch, 'descending'),
     );
-  }, [currentTournament.matches, playedGroupFilter]);
+  }, [currentTournament.matches, playedGroupFilter, groups]);
 
   const displayedUpcomingMatches = isMobile
     ? upcomingMatches.slice(0, visibleUpcomingMatches)
@@ -399,7 +399,7 @@ function App() {
     const newTeam = {
       id: Date.now(),
       name,
-      group: group || 'A',
+      group: category === 'masculino' ? group || 'A' : '',
     };
 
     updateTournament({
@@ -466,18 +466,20 @@ function App() {
 
     let matchGroup = '';
 
-    if (
-      homeTeamData?.group &&
-      homeTeamData.group === awayTeamData?.group
-    ) {
-      matchGroup = homeTeamData.group;
-    } else {
-      matchGroup = manuallySelectedGroup;
+    if (category === 'masculino') {
+      if (
+        homeTeamData?.group &&
+        homeTeamData.group === awayTeamData?.group
+      ) {
+        matchGroup = homeTeamData.group;
+      } else {
+        matchGroup = manuallySelectedGroup;
+      }
     }
 
     const newMatch = {
       id: Date.now(),
-      phase: phase || 'Grupos',
+      phase: phase || (category === 'masculino' ? 'Grupos' : 'Todos contra todos'),
       week: week || 'Semana por definir',
       group: matchGroup,
       homeTeam,
@@ -663,7 +665,8 @@ function App() {
   }
 
   const getGroupStyle = (group) => {
-    const isGroupA = group.toUpperCase() === 'A';
+    const groupChar = group ? group.toUpperCase() : 'A';
+    const isGroupA = groupChar === 'A';
     return {
       borderLeft: `5px solid ${isGroupA ? '#2563eb' : '#7c3aed'}`,
       backgroundColor: isGroupA ? 'rgba(37, 99, 235, 0.03)' : 'rgba(124, 58, 237, 0.03)',
@@ -674,7 +677,8 @@ function App() {
   };
 
   const getGroupHeaderStyle = (group) => {
-    const isGroupA = group.toUpperCase() === 'A';
+    const groupChar = group ? group.toUpperCase() : 'A';
+    const isGroupA = groupChar === 'A';
     return {
       color: isGroupA ? '#1d4ed8' : '#6d28d9',
       marginTop: 0,
@@ -774,15 +778,17 @@ function App() {
                 />
               </label>
 
-              <label>
-                Grupo
-                <input
-                  name="teamGroup"
-                  type="text"
-                  placeholder="Ej: A"
-                  maxLength="1"
-                />
-              </label>
+              {category === 'masculino' && (
+                <label>
+                  Grupo
+                  <input
+                    name="teamGroup"
+                    type="text"
+                    placeholder="Ej: A"
+                    maxLength="1"
+                  />
+                </label>
+              )}
 
               <button type="submit">Agregar equipo</button>
             </form>
@@ -851,20 +857,26 @@ function App() {
                   <input
                     name="phase"
                     type="text"
-                    placeholder="Grupos"
+                    placeholder={
+                      category === 'masculino'
+                        ? 'Grupos'
+                        : 'Todos contra todos'
+                    }
                   />
                 </label>
               </div>
 
-              <label>
-                Grupo
-                <input
-                  name="group"
-                  type="text"
-                  placeholder="Ej: A"
-                  maxLength="1"
-                />
-              </label>
+              {category === 'masculino' && (
+                <label>
+                  Grupo
+                  <input
+                    name="group"
+                    type="text"
+                    placeholder="Ej: A"
+                    maxLength="1"
+                  />
+                </label>
+              )}
 
               <button type="submit">Agregar partido</button>
             </form>
@@ -973,7 +985,7 @@ function App() {
           <div className="match-list">
             {upcomingMatches.length === 0 && (
               <p className="empty-message">
-                {upcomingGroupFilter === 'all'
+                {upcomingGroupFilter === 'all' || groups.length === 0
                   ? 'No hay partidos próximos.'
                   : `No hay partidos próximos del grupo ${upcomingGroupFilter}.`}
               </p>
@@ -1053,7 +1065,7 @@ function App() {
           <div className="match-list">
             {playedMatches.length === 0 && (
               <p className="empty-message">
-                {playedGroupFilter === 'all'
+                {playedGroupFilter === 'all' || groups.length === 0
                   ? 'Todavía no hay partidos jugados.'
                   : `Todavía no hay partidos jugados del grupo ${playedGroupFilter}.`}
               </p>
