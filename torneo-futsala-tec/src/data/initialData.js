@@ -420,21 +420,21 @@ export const initialData = {
         homeScore: 9,
         awayScore: 2,
       },
-
-      // Partidos pendientes para completar el formato todos contra todos
       {
         id: 5,
         phase: 'Todos contra todos',
         group: '',
         homeTeam: 'Ambi FC',
         awayTeam: 'Agro FC',
-        date: '',
-        time: 'Por definir',
-        week: 'Por definir',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        date: '2026-05-08',
+        time: '11:20 a.m.',
+        week: 'Semana 12',
+        played: true,
+        homeScore: 3,
+        awayScore: 7,
       },
+
+      // Partidos pendientes para completar el formato todos contra todos
       {
         id: 6,
         phase: 'Todos contra todos',
