@@ -190,7 +190,7 @@ export const initialData = {
         awayScore: 3,
       },
 
-      // Grupo C - Fecha 2 pendiente
+      // Grupo C - Fecha 2 jugada
       {
         id: 13,
         phase: 'Grupos',
@@ -200,9 +200,9 @@ export const initialData = {
         date: '2026-08-07',
         time: '12:10 p.m.',
         week: 'Semana 1',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 4,
+        awayScore: 1,
       },
       {
         id: 14,
@@ -213,9 +213,9 @@ export const initialData = {
         date: '2026-08-14',
         time: '12:10 p.m.',
         week: 'Semana 2',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 9,
+        awayScore: 1,
       },
 
       // Grupo A - Fecha 3
@@ -366,14 +366,20 @@ export const initialData = {
       },
       {
         id: 2,
-        name: 'Lázaro',
-        team: 'ATI',
-        goals: 5,
+        name: 'Luis',
+        team: 'Admin',
+        goals: 6,
       },
       {
         id: 3,
-        name: 'Luis',
-        team: 'Admin',
+        name: 'Ian',
+        team: 'Computación FC',
+        goals: 5,
+      },
+      {
+        id: 4,
+        name: 'Lázaro',
+        team: 'ATI',
         goals: 5,
       },
     ],
@@ -393,7 +399,7 @@ export const initialData = {
     ],
 
     matches: [
-      // Partidos jugados válidos
+      // Partidos jugados
       {
         id: 1,
         phase: 'Todos contra todos',
@@ -460,7 +466,7 @@ export const initialData = {
         awayScore: 7,
       },
 
-      // Partidos pendientes según el calendario de la imagen
+      // Partidos pendientes
       {
         id: 6,
         phase: 'Todos contra todos',
@@ -526,6 +532,8 @@ export const initialData = {
         homeScore: '',
         awayScore: '',
       },
+
+      // Resultado actualizado: Materiales 11 - 0 Agricola
       {
         id: 11,
         phase: 'Todos contra todos',
@@ -535,10 +543,12 @@ export const initialData = {
         date: '2026-09-11',
         time: '11:30 a.m.',
         week: 'Semana 6',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 11,
+        awayScore: 0,
       },
+
+      // Resultado actualizado: ICO FC 1 - 1 Ambi FC
       {
         id: 12,
         phase: 'Todos contra todos',
@@ -548,9 +558,9 @@ export const initialData = {
         date: '2026-09-18',
         time: '11:30 a.m.',
         week: 'Semana 7',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 1,
+        awayScore: 1,
       },
       {
         id: 13,
@@ -596,18 +606,24 @@ export const initialData = {
     scorers: [
       {
         id: 1,
-        name: 'Emilia',
-        team: 'ICO FC',
-        goals: 6,
+        name: 'Karina',
+        team: 'Materiales',
+        goals: 11,
       },
       {
         id: 2,
-        name: 'Karina',
-        team: 'Materiales',
-        goals: 5,
+        name: 'Emilia',
+        team: 'ICO FC',
+        goals: 7,
       },
       {
         id: 3,
+        name: 'Amelia',
+        team: 'Materiales',
+        goals: 3,
+      },
+      {
+        id: 4,
         name: 'Fabiola',
         team: 'Resistencia',
         goals: 2,
