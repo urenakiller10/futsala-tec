@@ -1,7 +1,7 @@
 export const initialData = {
   masculino: {
     title: 'Torneo Masculino',
-    format: 'Fase de grupos + eliminatorias',
+    format: 'Fase de grupos',
 
     teams: [
       { id: 1, name: 'Mante FC', group: 'A' },
@@ -85,6 +85,7 @@ export const initialData = {
       },
 
       // Fecha 3 - Semana 5
+      // Resultado: IDINETA 4 - 2 Mante FC
       {
         id: 5,
         phase: 'Grupos',
@@ -94,10 +95,12 @@ export const initialData = {
         date: '2026-09-04',
         time: '11:30 a.m.',
         week: 'Semana 5',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 4,
+        awayScore: 2,
       },
+
+      // Resultado: Agro FC 3 - 0 Física
       {
         id: 6,
         phase: 'Grupos',
@@ -107,9 +110,9 @@ export const initialData = {
         date: '2026-09-04',
         time: '12:10 p.m.',
         week: 'Semana 5',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 3,
+        awayScore: 0,
       },
 
       // =====================================================
@@ -621,7 +624,6 @@ export const initialData = {
         homeScore: '',
         awayScore: '',
       },
-
 
       {
         id: 15,
