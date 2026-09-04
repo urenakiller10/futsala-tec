@@ -26,7 +26,11 @@ export const initialData = {
     ],
 
     matches: [
-      // Grupo A - Partidos jugados
+      // =====================================================
+      // GRUPO A
+      // =====================================================
+
+      // Partidos jugados
       {
         id: 1,
         phase: 'Grupos',
@@ -80,9 +84,41 @@ export const initialData = {
         awayScore: 1,
       },
 
-      // Grupo B - Partidos jugados
+      // Fecha 3 - Semana 5
       {
         id: 5,
+        phase: 'Grupos',
+        group: 'A',
+        homeTeam: 'IDINETA',
+        awayTeam: 'Mante FC',
+        date: '2026-09-04',
+        time: '11:30 a.m.',
+        week: 'Semana 5',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+      {
+        id: 6,
+        phase: 'Grupos',
+        group: 'A',
+        homeTeam: 'Agro FC',
+        awayTeam: 'Física',
+        date: '2026-09-04',
+        time: '12:10 p.m.',
+        week: 'Semana 5',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
+      // =====================================================
+      // GRUPO B
+      // =====================================================
+
+      // Partidos jugados
+      {
+        id: 7,
         phase: 'Grupos',
         group: 'B',
         homeTeam: 'Computación FC',
@@ -95,7 +131,7 @@ export const initialData = {
         awayScore: 2,
       },
       {
-        id: 6,
+        id: 8,
         phase: 'Grupos',
         group: 'B',
         homeTeam: 'MecaFutsal',
@@ -108,7 +144,7 @@ export const initialData = {
         awayScore: 1,
       },
       {
-        id: 7,
+        id: 9,
         phase: 'Grupos',
         group: 'B',
         homeTeam: 'MecaFutsal',
@@ -121,7 +157,7 @@ export const initialData = {
         awayScore: 1,
       },
       {
-        id: 8,
+        id: 10,
         phase: 'Grupos',
         group: 'B',
         homeTeam: 'Computación FC',
@@ -134,9 +170,41 @@ export const initialData = {
         awayScore: 1,
       },
 
-      // Grupo C - Partidos jugados
+      // Fecha 3 - Semana 7
       {
-        id: 9,
+        id: 11,
+        phase: 'Grupos',
+        group: 'B',
+        homeTeam: 'MecaFutsal',
+        awayTeam: 'Computación FC',
+        date: '2026-09-18',
+        time: '11:30 a.m.',
+        week: 'Semana 7',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+      {
+        id: 12,
+        phase: 'Grupos',
+        group: 'B',
+        homeTeam: 'Materiales CF',
+        awayTeam: 'Biotec FC',
+        date: '2026-09-18',
+        time: '12:10 p.m.',
+        week: 'Semana 7',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
+      // =====================================================
+      // GRUPO C
+      // =====================================================
+
+      // Partidos jugados
+      {
+        id: 13,
         phase: 'Grupos',
         group: 'C',
         homeTeam: 'Admin',
@@ -149,7 +217,7 @@ export const initialData = {
         awayScore: 2,
       },
       {
-        id: 10,
+        id: 14,
         phase: 'Grupos',
         group: 'C',
         homeTeam: 'Produ FC',
@@ -161,38 +229,8 @@ export const initialData = {
         homeScore: 2,
         awayScore: 2,
       },
-
-      // Grupo D - Partidos jugados
       {
-        id: 11,
-        phase: 'Grupos',
-        group: 'D',
-        homeTeam: 'ICO FC',
-        awayTeam: 'Computadores FC',
-        date: '2026-05-22',
-        time: '11:30 a.m.',
-        week: 'Semana 14',
-        played: true,
-        homeScore: 3,
-        awayScore: 2,
-      },
-      {
-        id: 12,
-        phase: 'Grupos',
-        group: 'D',
-        homeTeam: 'ATI',
-        awayTeam: 'Forestal',
-        date: '2026-05-22',
-        time: '12:10 p.m.',
-        week: 'Semana 14',
-        played: true,
-        homeScore: 8,
-        awayScore: 3,
-      },
-
-      // Grupo C - Fecha 2 jugada
-      {
-        id: 13,
+        id: 15,
         phase: 'Grupos',
         group: 'C',
         homeTeam: 'Admin',
@@ -205,7 +243,7 @@ export const initialData = {
         awayScore: 1,
       },
       {
-        id: 14,
+        id: 16,
         phase: 'Grupos',
         group: 'C',
         homeTeam: 'Produ FC',
@@ -218,78 +256,22 @@ export const initialData = {
         awayScore: 1,
       },
 
-      // Grupo A - Fecha 3
-      {
-        id: 15,
-        phase: 'Grupos',
-        group: 'A',
-        homeTeam: 'IDINETA',
-        awayTeam: 'Mante FC',
-        date: '2026-09-04',
-        time: '12:10 p.m.',
-        week: 'Semana 5',
-        played: false,
-        homeScore: '',
-        awayScore: '',
-      },
-      {
-        id: 16,
-        phase: 'Grupos',
-        group: 'A',
-        homeTeam: 'Agro FC',
-        awayTeam: 'Física',
-        date: '2026-09-11',
-        time: '12:10 p.m.',
-        week: 'Semana 6',
-        played: false,
-        homeScore: '',
-        awayScore: '',
-      },
-
-      // Grupo B - Fecha 3
+      // Fecha 3 - Semana 10
       {
         id: 17,
         phase: 'Grupos',
-        group: 'B',
-        homeTeam: 'MecaFutsal',
-        awayTeam: 'Computación FC',
-        date: '2026-09-18',
-        time: '12:10 p.m.',
-        week: 'Semana 7',
+        group: 'C',
+        homeTeam: 'Admin',
+        awayTeam: 'Produ FC',
+        date: '2026-10-09',
+        time: '11:30 a.m.',
+        week: 'Semana 10',
         played: false,
         homeScore: '',
         awayScore: '',
       },
       {
         id: 18,
-        phase: 'Grupos',
-        group: 'B',
-        homeTeam: 'Materiales CF',
-        awayTeam: 'Biotec FC',
-        date: '2026-09-25',
-        time: '12:10 p.m.',
-        week: 'Semana 8',
-        played: false,
-        homeScore: '',
-        awayScore: '',
-      },
-
-      // Grupo C - Fecha 3
-      {
-        id: 19,
-        phase: 'Grupos',
-        group: 'C',
-        homeTeam: 'Admin',
-        awayTeam: 'Produ FC',
-        date: '2026-10-02',
-        time: '12:10 p.m.',
-        week: 'Semana 9',
-        played: false,
-        homeScore: '',
-        awayScore: '',
-      },
-      {
-        id: 20,
         phase: 'Grupos',
         group: 'C',
         homeTeam: 'Electro',
@@ -302,29 +284,64 @@ export const initialData = {
         awayScore: '',
       },
 
-      // Grupo D - Fecha 2 / Fecha 3
+      // =====================================================
+      // GRUPO D
+      // =====================================================
+
+      // Partidos jugados
+      {
+        id: 19,
+        phase: 'Grupos',
+        group: 'D',
+        homeTeam: 'ICO FC',
+        awayTeam: 'Computadores FC',
+        date: '2026-05-22',
+        time: '11:30 a.m.',
+        week: 'Semana 14',
+        played: true,
+        homeScore: 3,
+        awayScore: 2,
+      },
+      {
+        id: 20,
+        phase: 'Grupos',
+        group: 'D',
+        homeTeam: 'ATI',
+        awayTeam: 'Forestal',
+        date: '2026-05-22',
+        time: '12:10 p.m.',
+        week: 'Semana 14',
+        played: true,
+        homeScore: 8,
+        awayScore: 3,
+      },
+
+      // Fecha 2 - Semana 3
+      // Resultado: ICO FC 1 - 3 ATI
       {
         id: 21,
         phase: 'Grupos',
         group: 'D',
         homeTeam: 'ICO FC',
-        awayTeam: 'Forestal',
+        awayTeam: 'ATI',
         date: '2026-08-21',
-        time: '12:10 p.m.',
+        time: '11:30 a.m.',
         week: 'Semana 3',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 1,
+        awayScore: 3,
       },
+
+      // Fecha 3 - Semana 12
       {
         id: 22,
         phase: 'Grupos',
         group: 'D',
-        homeTeam: 'ATI',
-        awayTeam: 'Computadores FC',
-        date: '2026-08-28',
-        time: '12:10 p.m.',
-        week: 'Semana 4',
+        homeTeam: 'ICO FC',
+        awayTeam: 'Forestal',
+        date: '2026-10-23',
+        time: '11:30 a.m.',
+        week: 'Semana 12',
         played: false,
         homeScore: '',
         awayScore: '',
@@ -333,24 +350,26 @@ export const initialData = {
         id: 23,
         phase: 'Grupos',
         group: 'D',
-        homeTeam: 'ICO FC',
-        awayTeam: 'ATI',
-        date: '2026-10-16',
-        time: '11:30 a.m.',
-        week: 'Semana 11',
+        homeTeam: 'ATI',
+        awayTeam: 'Computadores FC',
+        date: '2026-10-23',
+        time: '12:10 p.m.',
+        week: 'Semana 12',
         played: false,
         homeScore: '',
         awayScore: '',
       },
+
+      // Reposición - Semana 13
       {
         id: 24,
-        phase: 'Grupos',
+        phase: 'Reposición',
         group: 'D',
         homeTeam: 'Forestal',
         awayTeam: 'Computadores FC',
-        date: '2026-10-16',
-        time: '12:10 p.m.',
-        week: 'Semana 11',
+        date: '2026-10-30',
+        time: '11:30 a.m.',
+        week: 'Semana 13',
         played: false,
         homeScore: '',
         awayScore: '',
@@ -372,14 +391,14 @@ export const initialData = {
       },
       {
         id: 3,
-        name: 'Ian',
-        team: 'Computación FC',
-        goals: 5,
+        name: 'Randall',
+        team: 'Construcción',
+        goals: 6,
       },
       {
         id: 4,
-        name: 'Lázaro',
-        team: 'ATI',
+        name: 'Ian',
+        team: 'Computación FC',
         goals: 5,
       },
     ],
@@ -399,7 +418,10 @@ export const initialData = {
     ],
 
     matches: [
-      // Partidos jugados
+      // =====================================================
+      // PARTIDOS JUGADOS
+      // =====================================================
+
       {
         id: 1,
         phase: 'Todos contra todos',
@@ -466,55 +488,66 @@ export const initialData = {
         awayScore: 7,
       },
 
-      // Partidos pendientes
+      // Resultado ya registrado: Materiales 11 - 0 Agricola
       {
         id: 6,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'Agro FC',
-        awayTeam: 'ICO FC',
+        homeTeam: 'Materiales',
+        awayTeam: 'Agricola',
         date: '2026-08-07',
         time: '11:30 a.m.',
         week: 'Semana 1',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 11,
+        awayScore: 0,
       },
+
+      // Resultado ya registrado: Ambi FC 1 - 1 ICO FC
       {
         id: 7,
         phase: 'Todos contra todos',
         group: '',
         homeTeam: 'Ambi FC',
-        awayTeam: 'Materiales',
+        awayTeam: 'ICO FC',
         date: '2026-08-14',
         time: '11:30 a.m.',
         week: 'Semana 2',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 1,
+        awayScore: 1,
       },
+
+      // Semana 4
+      // Resultado: Agro FC 2 - 2 Materiales
       {
         id: 8,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'ICO FC',
-        awayTeam: 'Resistencia',
-        date: '2026-08-21',
-        time: '11:30 a.m.',
-        week: 'Semana 3',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        homeTeam: 'Agro FC',
+        awayTeam: 'Materiales',
+        date: '2026-08-28',
+        time: '12:10 p.m.',
+        week: 'Semana 4',
+        played: true,
+        homeScore: 2,
+        awayScore: 2,
       },
+
+      // =====================================================
+      // PARTIDOS PENDIENTES
+      // =====================================================
+
+      // Semana 6
       {
         id: 9,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'Agro FC',
-        awayTeam: 'Agricola',
-        date: '2026-08-28',
+        homeTeam: 'ICO FC',
+        awayTeam: 'Resistencia',
+        date: '2026-09-11',
         time: '11:30 a.m.',
-        week: 'Semana 4',
+        week: 'Semana 6',
         played: false,
         homeScore: '',
         awayScore: '',
@@ -523,54 +556,54 @@ export const initialData = {
         id: 10,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'Ambi FC',
-        awayTeam: 'Resistencia',
-        date: '2026-09-04',
-        time: '11:30 a.m.',
-        week: 'Semana 5',
+        homeTeam: 'Agro FC',
+        awayTeam: 'Agricola',
+        date: '2026-09-11',
+        time: '12:10 p.m.',
+        week: 'Semana 6',
         played: false,
         homeScore: '',
         awayScore: '',
       },
 
-      // Resultado actualizado: Materiales 11 - 0 Agricola
+      // Semana 9
       {
         id: 11,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'Materiales',
-        awayTeam: 'Agricola',
-        date: '2026-09-11',
+        homeTeam: 'Agro FC',
+        awayTeam: 'Resistencia',
+        date: '2026-10-02',
         time: '11:30 a.m.',
-        week: 'Semana 6',
-        played: true,
-        homeScore: 11,
-        awayScore: 0,
+        week: 'Semana 9',
+        played: false,
+        homeScore: '',
+        awayScore: '',
       },
-
-      // Resultado actualizado: ICO FC 1 - 1 Ambi FC
       {
         id: 12,
         phase: 'Todos contra todos',
         group: '',
         homeTeam: 'Ambi FC',
-        awayTeam: 'ICO FC',
-        date: '2026-09-18',
-        time: '11:30 a.m.',
-        week: 'Semana 7',
-        played: true,
-        homeScore: 1,
-        awayScore: 1,
+        awayTeam: 'Materiales',
+        date: '2026-10-02',
+        time: '12:10 p.m.',
+        week: 'Semana 9',
+        played: false,
+        homeScore: '',
+        awayScore: '',
       },
+
+      // Semana 11
       {
         id: 13,
         phase: 'Todos contra todos',
         group: '',
         homeTeam: 'Agro FC',
-        awayTeam: 'Resistencia',
-        date: '2026-09-25',
+        awayTeam: 'ICO FC',
+        date: '2026-10-16',
         time: '11:30 a.m.',
-        week: 'Semana 8',
+        week: 'Semana 11',
         played: false,
         homeScore: '',
         awayScore: '',
@@ -580,23 +613,25 @@ export const initialData = {
         phase: 'Todos contra todos',
         group: '',
         homeTeam: 'Ambi FC',
-        awayTeam: 'Agricola',
-        date: '2026-10-02',
-        time: '11:30 a.m.',
-        week: 'Semana 9',
+        awayTeam: 'Resistencia',
+        date: '2026-10-16',
+        time: '12:10 p.m.',
+        week: 'Semana 11',
         played: false,
         homeScore: '',
         awayScore: '',
       },
+
+
       {
         id: 15,
         phase: 'Todos contra todos',
         group: '',
-        homeTeam: 'Agro FC',
-        awayTeam: 'Materiales',
-        date: '2026-10-09',
-        time: '11:30 a.m.',
-        week: 'Semana 10',
+        homeTeam: 'Ambi FC',
+        awayTeam: 'Agricola',
+        date: '2026-10-30',
+        time: '12:10 p.m.',
+        week: 'Semana 13',
         played: false,
         homeScore: '',
         awayScore: '',
@@ -620,7 +655,7 @@ export const initialData = {
         id: 3,
         name: 'Amelia',
         team: 'Materiales',
-        goals: 3,
+        goals: 4,
       },
       {
         id: 4,
