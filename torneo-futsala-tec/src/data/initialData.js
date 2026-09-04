@@ -328,8 +328,8 @@ export const initialData = {
         time: '11:30 a.m.',
         week: 'Semana 3',
         played: true,
-        homeScore: 1,
-        awayScore: 3,
+        homeScore: 3,
+        awayScore: 1,
       },
 
       // Fecha 3 - Semana 12
