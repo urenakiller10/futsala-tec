@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
+
 import { initialData } from './data/initialData';
+
 import futsalaTecShield from './assets/futsala tec.jpeg';
 
-// Identificador único generado en cada deploy/build
-const BUILD_ID = import.meta.env.VITE_BUILD_ID || Date.now().toString();
-const STORAGE_KEY = 'torneo-futsala-tec-data-v3';
-const STORAGE_BUILD_KEY = 'torneo-futsala-tec-build';
+// ======================================================
+// CONFIGURACIÓN
+// ======================================================
+
+// Cada vez que initialData cambie y quieras que todos los usuarios
+// reciban los nuevos datos, aumenta esta versión:
+// v4 -> v5 -> v6...
+const DATA_VERSION = 'v4';
+
+const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
 const ADMIN_PASSWORD = 'J123';
 
@@ -17,14 +25,17 @@ const MOBILE_GROUPS_STEP = 2;
 
 function App() {
   const [category, setCategory] = useState('masculino');
+
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [upcomingGroupFilter, setUpcomingGroupFilter] = useState('all');
+
   const [playedGroupFilter, setPlayedGroupFilter] = useState('all');
 
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
 
   const [adminPassword, setAdminPassword] = useState('');
+
   const [adminError, setAdminError] = useState('');
 
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -39,21 +50,28 @@ function App() {
     return window.matchMedia('(max-width: 768px)').matches;
   });
 
-  const [visibleUpcomingMatches, setVisibleUpcomingMatches] = useState(MOBILE_INITIAL_MATCHES);
-  const [visiblePlayedMatches, setVisiblePlayedMatches] = useState(MOBILE_INITIAL_MATCHES);
-  const [visibleStandingsGroups, setVisibleStandingsGroups] = useState(MOBILE_INITIAL_GROUPS);
+  const [visibleUpcomingMatches, setVisibleUpcomingMatches] = useState(
+    MOBILE_INITIAL_MATCHES,
+  );
 
-  // Lógica inteligente: Si hay un nuevo deploy, limpia la memoria y carga initialData
+  const [visiblePlayedMatches, setVisiblePlayedMatches] = useState(
+    MOBILE_INITIAL_MATCHES,
+  );
+
+  const [visibleStandingsGroups, setVisibleStandingsGroups] = useState(
+    MOBILE_INITIAL_GROUPS,
+  );
+
+  // ======================================================
+  // DATOS DEL TORNEO
+  // ======================================================
+
   const [data, setData] = useState(() => {
-    const savedBuild = localStorage.getItem(STORAGE_BUILD_KEY);
-    const savedData = localStorage.getItem(STORAGE_KEY);
-
-    // Si cambió el deploy/build, eliminamos datos viejos del navegador del usuario
-    if (savedBuild !== BUILD_ID) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.setItem(STORAGE_BUILD_KEY, BUILD_ID);
+    if (typeof window === 'undefined') {
       return initialData;
     }
+
+    const savedData = localStorage.getItem(STORAGE_KEY);
 
     if (savedData) {
       try {
@@ -69,11 +87,31 @@ function App() {
   const currentTournament = data[category];
 
   const mobileNavigationItems = [
-    { id: 'inicio', label: 'Inicio', icon: '↑' },
-    { id: 'proximos', label: 'Próximos', icon: 'P' },
-    { id: 'jugados', label: 'Jugados', icon: 'J' },
-    { id: 'posiciones', label: 'Posiciones', icon: 'T' },
-    { id: 'goleadores', label: 'Goleadores', icon: 'G' },
+    {
+      id: 'inicio',
+      label: 'Inicio',
+      icon: '↑',
+    },
+    {
+      id: 'proximos',
+      label: 'Próximos',
+      icon: 'P',
+    },
+    {
+      id: 'jugados',
+      label: 'Jugados',
+      icon: 'J',
+    },
+    {
+      id: 'posiciones',
+      label: 'Posiciones',
+      icon: 'T',
+    },
+    {
+      id: 'goleadores',
+      label: 'Goleadores',
+      icon: 'G',
+    },
     ...(category === 'masculino'
       ? [
           {
@@ -85,10 +123,15 @@ function App() {
       : []),
   ];
 
+  // Guarda los cambios hechos desde el navegador para esta
+  // versión específica de los datos.
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    localStorage.setItem(STORAGE_BUILD_KEY, BUILD_ID);
   }, [data]);
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
 
   useEffect(() => {
     const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
@@ -108,11 +151,15 @@ function App() {
 
   useEffect(() => {
     setUpcomingGroupFilter('all');
+
     setPlayedGroupFilter('all');
+
     setIsMobileNavOpen(false);
 
     setVisibleUpcomingMatches(MOBILE_INITIAL_MATCHES);
+
     setVisiblePlayedMatches(MOBILE_INITIAL_MATCHES);
+
     setVisibleStandingsGroups(MOBILE_INITIAL_GROUPS);
   }, [category]);
 
@@ -123,6 +170,10 @@ function App() {
   useEffect(() => {
     setVisiblePlayedMatches(MOBILE_INITIAL_MATCHES);
   }, [playedGroupFilter]);
+
+  // ======================================================
+  // NAVEGACIÓN MÓVIL
+  // ======================================================
 
   useEffect(() => {
     const sectionIds = [
@@ -173,6 +224,10 @@ function App() {
     };
   }, [category, isAdmin]);
 
+  // ======================================================
+  // GRUPOS
+  // ======================================================
+
   const groups = useMemo(() => {
     const groupNames = currentTournament.teams
       .map((team) => team.group)
@@ -189,6 +244,10 @@ function App() {
     groups.length - visibleStandingsGroups,
     0,
   );
+
+  // ======================================================
+  // PRÓXIMOS PARTIDOS
+  // ======================================================
 
   const upcomingMatches = useMemo(() => {
     const filteredMatches = currentTournament.matches.filter((match) => {
@@ -207,6 +266,10 @@ function App() {
       compareMatchesByDate(firstMatch, secondMatch, 'ascending'),
     );
   }, [currentTournament.matches, upcomingGroupFilter, groups]);
+
+  // ======================================================
+  // PARTIDOS JUGADOS
+  // ======================================================
 
   const playedMatches = useMemo(() => {
     const filteredMatches = currentTournament.matches.filter((match) => {
@@ -244,12 +307,20 @@ function App() {
     0,
   );
 
+  // ======================================================
+  // TABLA DE POSICIONES
+  // ======================================================
+
   const standings = useMemo(() => {
     return calculateStandings(
       currentTournament.teams,
       currentTournament.matches,
     );
   }, [currentTournament.teams, currentTournament.matches]);
+
+  // ======================================================
+  // NAVEGACIÓN
+  // ======================================================
 
   function scrollToSection(sectionId) {
     const section = document.getElementById(sectionId);
@@ -259,6 +330,7 @@ function App() {
     }
 
     setActiveSection(sectionId);
+
     setIsMobileNavOpen(false);
 
     section.scrollIntoView({
@@ -278,10 +350,13 @@ function App() {
     setCategory(newCategory);
 
     setUpcomingGroupFilter('all');
+
     setPlayedGroupFilter('all');
 
     setVisibleUpcomingMatches(MOBILE_INITIAL_MATCHES);
+
     setVisiblePlayedMatches(MOBILE_INITIAL_MATCHES);
+
     setVisibleStandingsGroups(MOBILE_INITIAL_GROUPS);
 
     setActiveSection('inicio');
@@ -291,6 +366,10 @@ function App() {
       behavior: 'smooth',
     });
   }
+
+  // ======================================================
+  // VER MÁS / VER MENOS
+  // ======================================================
 
   function showMoreUpcomingMatches() {
     setVisibleUpcomingMatches(
@@ -349,22 +428,33 @@ function App() {
     }
   }
 
+  // ======================================================
+  // ADMIN
+  // ======================================================
+
   function openAdminLogin() {
     if (isAdmin) {
       setIsAdmin(false);
+
       setAdminPassword('');
+
       setAdminError('');
+
       return;
     }
 
     setIsAdminLoginOpen(true);
+
     setAdminPassword('');
+
     setAdminError('');
   }
 
   function closeAdminLogin() {
     setIsAdminLoginOpen(false);
+
     setAdminPassword('');
+
     setAdminError('');
   }
 
@@ -373,14 +463,22 @@ function App() {
 
     if (adminPassword !== ADMIN_PASSWORD) {
       setAdminError('La contraseña ingresada es incorrecta.');
+
       return;
     }
 
     setIsAdmin(true);
+
     setIsAdminLoginOpen(false);
+
     setAdminPassword('');
+
     setAdminError('');
   }
+
+  // ======================================================
+  // EQUIPOS
+  // ======================================================
 
   function addTeam(event) {
     event.preventDefault();
@@ -388,6 +486,7 @@ function App() {
     const formData = new FormData(event.currentTarget);
 
     const name = String(formData.get('teamName') || '').trim();
+
     const group = String(formData.get('teamGroup') || '')
       .trim()
       .toUpperCase();
@@ -422,7 +521,9 @@ function App() {
     updateTournament({
       ...currentTournament,
 
-      teams: currentTournament.teams.filter((team) => team.id !== teamId),
+      teams: currentTournament.teams.filter(
+        (team) => team.id !== teamId,
+      ),
 
       matches: currentTournament.matches.filter(
         (match) =>
@@ -436,16 +537,25 @@ function App() {
     });
   }
 
+  // ======================================================
+  // PARTIDOS
+  // ======================================================
+
   function addMatch(event) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
     const homeTeam = String(formData.get('homeTeam') || '');
+
     const awayTeam = String(formData.get('awayTeam') || '');
+
     const date = String(formData.get('date') || '');
+
     const time = String(formData.get('time') || '').trim();
+
     const week = String(formData.get('week') || '').trim();
+
     const phase = String(formData.get('phase') || '').trim();
 
     const manuallySelectedGroup = String(formData.get('group') || '')
@@ -479,21 +589,39 @@ function App() {
 
     const newMatch = {
       id: Date.now(),
-      phase: phase || (category === 'masculino' ? 'Grupos' : 'Todos contra todos'),
+
+      phase:
+        phase ||
+        (category === 'masculino'
+          ? 'Grupos'
+          : 'Todos contra todos'),
+
       week: week || 'Semana por definir',
+
       group: matchGroup,
+
       homeTeam,
+
       awayTeam,
+
       date,
+
       time: time || 'Hora por definir',
+
       played: false,
+
       homeScore: '',
+
       awayScore: '',
     };
 
     updateTournament({
       ...currentTournament,
-      matches: [...currentTournament.matches, newMatch],
+
+      matches: [
+        ...currentTournament.matches,
+        newMatch,
+      ],
     });
 
     event.currentTarget.reset();
@@ -528,6 +656,7 @@ function App() {
       }
 
       const homeScore = Number(match.homeScore);
+
       const awayScore = Number(match.awayScore);
 
       if (
@@ -541,8 +670,11 @@ function App() {
 
       return {
         ...match,
+
         homeScore,
+
         awayScore,
+
         played: true,
       };
     });
@@ -561,8 +693,11 @@ function App() {
 
       return {
         ...match,
+
         played: false,
+
         homeScore: '',
+
         awayScore: '',
       };
     });
@@ -577,20 +712,37 @@ function App() {
     updateTournament({
       ...currentTournament,
 
-      matches: currentTournament.matches.filter((match) => match.id !== matchId),
+      matches: currentTournament.matches.filter(
+        (match) => match.id !== matchId,
+      ),
     });
   }
+
+  // ======================================================
+  // GOLEADORES
+  // ======================================================
 
   function addScorer(event) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
-    const name = String(formData.get('scorerName') || '').trim();
-    const team = String(formData.get('scorerTeam') || '');
+    const name = String(
+      formData.get('scorerName') || '',
+    ).trim();
+
+    const team = String(
+      formData.get('scorerTeam') || '',
+    );
+
     const goals = Number(formData.get('goals'));
 
-    if (!name || !team || Number.isNaN(goals) || goals < 1) {
+    if (
+      !name ||
+      !team ||
+      Number.isNaN(goals) ||
+      goals < 1
+    ) {
       return;
     }
 
@@ -643,6 +795,10 @@ function App() {
     });
   }
 
+  // ======================================================
+  // RESET
+  // ======================================================
+
   function resetData() {
     const confirmReset = window.confirm(
       '¿Seguro que desea reiniciar todos los datos del torneo?',
@@ -652,48 +808,89 @@ function App() {
       return;
     }
 
-    setData(initialData);
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_BUILD_KEY);
+
+    setData(initialData);
 
     setUpcomingGroupFilter('all');
+
     setPlayedGroupFilter('all');
 
     setVisibleUpcomingMatches(MOBILE_INITIAL_MATCHES);
+
     setVisiblePlayedMatches(MOBILE_INITIAL_MATCHES);
+
     setVisibleStandingsGroups(MOBILE_INITIAL_GROUPS);
   }
 
+  // ======================================================
+  // ESTILOS DE GRUPOS
+  // ======================================================
+
   const getGroupStyle = (group) => {
-    const groupChar = group ? group.toUpperCase() : 'A';
+    const groupChar = group
+      ? group.toUpperCase()
+      : 'A';
+
     const isGroupA = groupChar === 'A';
+
     return {
-      borderLeft: `5px solid ${isGroupA ? '#2563eb' : '#7c3aed'}`,
-      backgroundColor: isGroupA ? 'rgba(37, 99, 235, 0.03)' : 'rgba(124, 58, 237, 0.03)',
+      borderLeft: `5px solid ${
+        isGroupA
+          ? '#2563eb'
+          : '#7c3aed'
+      }`,
+
+      backgroundColor: isGroupA
+        ? 'rgba(37, 99, 235, 0.03)'
+        : 'rgba(124, 58, 237, 0.03)',
+
       padding: '1rem',
+
       borderRadius: '8px',
+
       marginBottom: '1.5rem',
     };
   };
 
   const getGroupHeaderStyle = (group) => {
-    const groupChar = group ? group.toUpperCase() : 'A';
+    const groupChar = group
+      ? group.toUpperCase()
+      : 'A';
+
     const isGroupA = groupChar === 'A';
+
     return {
-      color: isGroupA ? '#1d4ed8' : '#6d28d9',
+      color: isGroupA
+        ? '#1d4ed8'
+        : '#6d28d9',
+
       marginTop: 0,
+
       marginBottom: '0.75rem',
+
       display: 'flex',
+
       alignItems: 'center',
+
       gap: '0.5rem',
     };
   };
 
+  // ======================================================
+  // TEMPLATE
+  // ======================================================
+
   return (
     <main className="app">
-      <section className="hero" id="inicio">
+      <section
+        className="hero"
+        id="inicio"
+      >
         <div className="hero__content">
-          <p className="hero__eyebrow">Tecnológico de Costa Rica</p>
+          <p className="hero__eyebrow">
+            Tecnológico de Costa Rica
+          </p>
 
           <div className="hero__title-row">
             <img
@@ -702,31 +899,41 @@ function App() {
               alt="Escudo de Futsala TEC"
             />
 
-            <h1 className="hero__title">Torneo Interno de Futsala TEC</h1>
+            <h1 className="hero__title">
+              Torneo Interno de Futsala TEC
+            </h1>
           </div>
 
           <p className="hero__text">
-            Consulte partidos, resultados, tablas de posiciones y goleadores
-            del torneo interno.
+            Consulte partidos, resultados, tablas de posiciones y
+            goleadores del torneo interno.
           </p>
 
           <div className="hero__actions">
             <button
               className={`category-button ${
-                category === 'masculino' ? 'active' : ''
+                category === 'masculino'
+                  ? 'active'
+                  : ''
               }`}
               type="button"
-              onClick={() => changeCategory('masculino')}
+              onClick={() =>
+                changeCategory('masculino')
+              }
             >
               Masculino
             </button>
 
             <button
               className={`category-button ${
-                category === 'femenino' ? 'active' : ''
+                category === 'femenino'
+                  ? 'active'
+                  : ''
               }`}
               type="button"
-              onClick={() => changeCategory('femenino')}
+              onClick={() =>
+                changeCategory('femenino')
+              }
             >
               Femenino
             </button>
@@ -737,22 +944,32 @@ function App() {
       <section className="tournament-header">
         <div>
           <h2>{currentTournament.title}</h2>
+
           <p>{currentTournament.format}</p>
         </div>
 
         <div className="tournament-header__stats">
           <article>
-            <strong>{currentTournament.teams.length}</strong>
+            <strong>
+              {currentTournament.teams.length}
+            </strong>
+
             <span>Equipos</span>
           </article>
 
           <article>
-            <strong>{currentTournament.matches.length}</strong>
+            <strong>
+              {currentTournament.matches.length}
+            </strong>
+
             <span>Partidos</span>
           </article>
 
           <article>
-            <strong>{currentTournament.scorers.length}</strong>
+            <strong>
+              {currentTournament.scorers.length}
+            </strong>
+
             <span>Goleadores</span>
           </article>
         </div>
@@ -762,15 +979,20 @@ function App() {
         <section className="admin-panel">
           <div className="section-title">
             <p>Panel rápido</p>
+
             <h2>Administrar torneo</h2>
           </div>
 
           <div className="admin-grid">
-            <form className="admin-form" onSubmit={addTeam}>
+            <form
+              className="admin-form"
+              onSubmit={addTeam}
+            >
               <h3>Agregar equipo</h3>
 
               <label>
                 Nombre del equipo
+
                 <input
                   name="teamName"
                   type="text"
@@ -781,6 +1003,7 @@ function App() {
               {category === 'masculino' && (
                 <label>
                   Grupo
+
                   <input
                     name="teamGroup"
                     type="text"
@@ -790,38 +1013,69 @@ function App() {
                 </label>
               )}
 
-              <button type="submit">Agregar equipo</button>
+              <button type="submit">
+                Agregar equipo
+              </button>
             </form>
 
-            <form className="admin-form" onSubmit={addMatch}>
+            <form
+              className="admin-form"
+              onSubmit={addMatch}
+            >
               <h3>Agregar partido</h3>
 
               <div className="form-row">
                 <label>
                   Local
-                  <select name="homeTeam" defaultValue="">
-                    <option value="" disabled>
+
+                  <select
+                    name="homeTeam"
+                    defaultValue=""
+                  >
+                    <option
+                      value=""
+                      disabled
+                    >
                       Seleccione
                     </option>
-                    {currentTournament.teams.map((team) => (
-                      <option key={team.id} value={team.name}>
-                        {team.name}
-                      </option>
-                    ))}
+
+                    {currentTournament.teams.map(
+                      (team) => (
+                        <option
+                          key={team.id}
+                          value={team.name}
+                        >
+                          {team.name}
+                        </option>
+                      ),
+                    )}
                   </select>
                 </label>
 
                 <label>
                   Visitante
-                  <select name="awayTeam" defaultValue="">
-                    <option value="" disabled>
+
+                  <select
+                    name="awayTeam"
+                    defaultValue=""
+                  >
+                    <option
+                      value=""
+                      disabled
+                    >
                       Seleccione
                     </option>
-                    {currentTournament.teams.map((team) => (
-                      <option key={team.id} value={team.name}>
-                        {team.name}
-                      </option>
-                    ))}
+
+                    {currentTournament.teams.map(
+                      (team) => (
+                        <option
+                          key={team.id}
+                          value={team.name}
+                        >
+                          {team.name}
+                        </option>
+                      ),
+                    )}
                   </select>
                 </label>
               </div>
@@ -829,6 +1083,7 @@ function App() {
               <div className="form-row">
                 <label>
                   Semana o jornada
+
                   <input
                     name="week"
                     type="text"
@@ -838,13 +1093,18 @@ function App() {
 
                 <label>
                   Fecha
-                  <input name="date" type="date" />
+
+                  <input
+                    name="date"
+                    type="date"
+                  />
                 </label>
               </div>
 
               <div className="form-row">
                 <label>
                   Hora
+
                   <input
                     name="time"
                     type="text"
@@ -854,6 +1114,7 @@ function App() {
 
                 <label>
                   Fase
+
                   <input
                     name="phase"
                     type="text"
@@ -869,6 +1130,7 @@ function App() {
               {category === 'masculino' && (
                 <label>
                   Grupo
+
                   <input
                     name="group"
                     type="text"
@@ -878,14 +1140,20 @@ function App() {
                 </label>
               )}
 
-              <button type="submit">Agregar partido</button>
+              <button type="submit">
+                Agregar partido
+              </button>
             </form>
 
-            <form className="admin-form" onSubmit={addScorer}>
+            <form
+              className="admin-form"
+              onSubmit={addScorer}
+            >
               <h3>Agregar goles</h3>
 
               <label>
                 Nombre del jugador
+
                 <input
                   name="scorerName"
                   type="text"
@@ -895,20 +1163,34 @@ function App() {
 
               <label>
                 Equipo
-                <select name="scorerTeam" defaultValue="">
-                  <option value="" disabled>
+
+                <select
+                  name="scorerTeam"
+                  defaultValue=""
+                >
+                  <option
+                    value=""
+                    disabled
+                  >
                     Seleccione
                   </option>
-                  {currentTournament.teams.map((team) => (
-                    <option key={team.id} value={team.name}>
-                      {team.name}
-                    </option>
-                  ))}
+
+                  {currentTournament.teams.map(
+                    (team) => (
+                      <option
+                        key={team.id}
+                        value={team.name}
+                      >
+                        {team.name}
+                      </option>
+                    ),
+                  )}
                 </select>
               </label>
 
               <label>
                 Goles
+
                 <input
                   name="goals"
                   type="number"
@@ -917,7 +1199,9 @@ function App() {
                 />
               </label>
 
-              <button type="submit">Agregar goles</button>
+              <button type="submit">
+                Agregar goles
+              </button>
             </form>
           </div>
 
@@ -925,20 +1209,32 @@ function App() {
             <h3>Equipos registrados</h3>
 
             <div className="team-chips">
-              {currentTournament.teams.map((team) => (
-                <span className="team-chip" key={team.id}>
-                  {team.name}
-                  {team.group && <small>Grupo {team.group}</small>}
-
-                  <button
-                    type="button"
-                    aria-label={`Eliminar ${team.name}`}
-                    onClick={() => deleteTeam(team.id)}
+              {currentTournament.teams.map(
+                (team) => (
+                  <span
+                    className="team-chip"
+                    key={team.id}
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
+                    {team.name}
+
+                    {team.group && (
+                      <small>
+                        Grupo {team.group}
+                      </small>
+                    )}
+
+                    <button
+                      type="button"
+                      aria-label={`Eliminar ${team.name}`}
+                      onClick={() =>
+                        deleteTeam(team.id)
+                      }
+                    >
+                      ×
+                    </button>
+                  </span>
+                ),
+              )}
             </div>
           </div>
 
@@ -953,10 +1249,14 @@ function App() {
       )}
 
       <section className="content-grid">
-        <section className="card navigation-section" id="proximos">
+        <section
+          className="card navigation-section"
+          id="proximos"
+        >
           <div className="section-header">
             <div className="section-title">
               <p>Calendario</p>
+
               <h2>Próximos partidos</h2>
             </div>
 
@@ -967,13 +1267,20 @@ function App() {
                 <select
                   value={upcomingGroupFilter}
                   onChange={(event) =>
-                    setUpcomingGroupFilter(event.target.value)
+                    setUpcomingGroupFilter(
+                      event.target.value,
+                    )
                   }
                 >
-                  <option value="all">Todos</option>
+                  <option value="all">
+                    Todos
+                  </option>
 
                   {groups.map((group) => (
-                    <option key={group} value={group}>
+                    <option
+                      key={group}
+                      value={group}
+                    >
                       Grupo {group}
                     </option>
                   ))}
@@ -985,32 +1292,39 @@ function App() {
           <div className="match-list">
             {upcomingMatches.length === 0 && (
               <p className="empty-message">
-                {upcomingGroupFilter === 'all' || groups.length === 0
+                {upcomingGroupFilter === 'all' ||
+                groups.length === 0
                   ? 'No hay partidos próximos.'
                   : `No hay partidos próximos del grupo ${upcomingGroupFilter}.`}
               </p>
             )}
 
-            {displayedUpcomingMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                isAdmin={isAdmin}
-                onUpdate={updateMatch}
-                onSave={saveResult}
-                onPending={markAsPending}
-                onDelete={deleteMatch}
-              />
-            ))}
+            {displayedUpcomingMatches.map(
+              (match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  isAdmin={isAdmin}
+                  onUpdate={updateMatch}
+                  onSave={saveResult}
+                  onPending={markAsPending}
+                  onDelete={deleteMatch}
+                />
+              ),
+            )}
 
             {isMobile &&
-              upcomingMatches.length > MOBILE_INITIAL_MATCHES && (
+              upcomingMatches.length >
+                MOBILE_INITIAL_MATCHES && (
                 <div className="match-list__actions">
-                  {remainingUpcomingMatches > 0 ? (
+                  {remainingUpcomingMatches >
+                  0 ? (
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={showMoreUpcomingMatches}
+                      onClick={
+                        showMoreUpcomingMatches
+                      }
                     >
                       Ver{' '}
                       {Math.min(
@@ -1023,7 +1337,9 @@ function App() {
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={showLessUpcomingMatches}
+                      onClick={
+                        showLessUpcomingMatches
+                      }
                     >
                       Ver menos
                     </button>
@@ -1033,10 +1349,14 @@ function App() {
           </div>
         </section>
 
-        <section className="card navigation-section" id="jugados">
+        <section
+          className="card navigation-section"
+          id="jugados"
+        >
           <div className="section-header">
             <div className="section-title">
               <p>Resultados</p>
+
               <h2>Partidos jugados</h2>
             </div>
 
@@ -1047,13 +1367,20 @@ function App() {
                 <select
                   value={playedGroupFilter}
                   onChange={(event) =>
-                    setPlayedGroupFilter(event.target.value)
+                    setPlayedGroupFilter(
+                      event.target.value,
+                    )
                   }
                 >
-                  <option value="all">Todos</option>
+                  <option value="all">
+                    Todos
+                  </option>
 
                   {groups.map((group) => (
-                    <option key={group} value={group}>
+                    <option
+                      key={group}
+                      value={group}
+                    >
                       Grupo {group}
                     </option>
                   ))}
@@ -1065,32 +1392,39 @@ function App() {
           <div className="match-list">
             {playedMatches.length === 0 && (
               <p className="empty-message">
-                {playedGroupFilter === 'all' || groups.length === 0
+                {playedGroupFilter === 'all' ||
+                groups.length === 0
                   ? 'Todavía no hay partidos jugados.'
                   : `Todavía no hay partidos jugados del grupo ${playedGroupFilter}.`}
               </p>
             )}
 
-            {displayedPlayedMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                isAdmin={isAdmin}
-                onUpdate={updateMatch}
-                onSave={saveResult}
-                onPending={markAsPending}
-                onDelete={deleteMatch}
-              />
-            ))}
+            {displayedPlayedMatches.map(
+              (match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  isAdmin={isAdmin}
+                  onUpdate={updateMatch}
+                  onSave={saveResult}
+                  onPending={markAsPending}
+                  onDelete={deleteMatch}
+                />
+              ),
+            )}
 
             {isMobile &&
-              playedMatches.length > MOBILE_INITIAL_MATCHES && (
+              playedMatches.length >
+                MOBILE_INITIAL_MATCHES && (
                 <div className="match-list__actions">
-                  {remainingPlayedMatches > 0 ? (
+                  {remainingPlayedMatches >
+                  0 ? (
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={showMorePlayedMatches}
+                      onClick={
+                        showMorePlayedMatches
+                      }
                     >
                       Ver{' '}
                       {Math.min(
@@ -1103,7 +1437,9 @@ function App() {
                     <button
                       className="show-more-button"
                       type="button"
-                      onClick={showLessPlayedMatches}
+                      onClick={
+                        showLessPlayedMatches
+                      }
                     >
                       Ver menos
                     </button>
@@ -1121,74 +1457,98 @@ function App() {
         >
           <div className="section-title">
             <p>Clasificación</p>
+
             <h2>Tabla de posiciones</h2>
           </div>
 
           {groups.length > 0 ? (
             <>
-              {displayedStandingsGroups.map((group) => (
-                <div
-                  className={`table-block table-block--group-${group.toLowerCase()}`}
-                  style={getGroupStyle(group)}
-                  key={group}
-                >
-                  <h3 style={getGroupHeaderStyle(group)}>
-                    Grupo {group}
-                  </h3>
-
-                  <StandingsTable
-                    standings={standings.filter(
-                      (row) => row.team.group === group,
-                    )}
-                  />
-                </div>
-              ))}
-
-              {isMobile && groups.length > MOBILE_INITIAL_GROUPS && (
-                <div className="standings-groups__actions">
-                  {remainingStandingsGroups > 0 ? (
-                    <button
-                      className="show-more-button"
-                      type="button"
-                      onClick={showMoreStandingsGroups}
+              {displayedStandingsGroups.map(
+                (group) => (
+                  <div
+                    className={`table-block table-block--group-${group.toLowerCase()}`}
+                    style={getGroupStyle(group)}
+                    key={group}
+                  >
+                    <h3
+                      style={getGroupHeaderStyle(
+                        group,
+                      )}
                     >
-                      Ver{' '}
-                      {Math.min(
-                        MOBILE_GROUPS_STEP,
-                        remainingStandingsGroups,
-                      )}{' '}
-                      {Math.min(
-                        MOBILE_GROUPS_STEP,
-                        remainingStandingsGroups,
-                      ) === 1
-                        ? 'grupo más'
-                        : 'grupos más'}
-                    </button>
-                  ) : (
-                    <button
-                      className="show-more-button"
-                      type="button"
-                      onClick={showLessStandingsGroups}
-                    >
-                      Ver menos
-                    </button>
-                  )}
-                </div>
+                      Grupo {group}
+                    </h3>
+
+                    <StandingsTable
+                      standings={standings.filter(
+                        (row) =>
+                          row.team.group ===
+                          group,
+                      )}
+                    />
+                  </div>
+                ),
               )}
+
+              {isMobile &&
+                groups.length >
+                  MOBILE_INITIAL_GROUPS && (
+                  <div className="standings-groups__actions">
+                    {remainingStandingsGroups >
+                    0 ? (
+                      <button
+                        className="show-more-button"
+                        type="button"
+                        onClick={
+                          showMoreStandingsGroups
+                        }
+                      >
+                        Ver{' '}
+                        {Math.min(
+                          MOBILE_GROUPS_STEP,
+                          remainingStandingsGroups,
+                        )}{' '}
+                        {Math.min(
+                          MOBILE_GROUPS_STEP,
+                          remainingStandingsGroups,
+                        ) === 1
+                          ? 'grupo más'
+                          : 'grupos más'}
+                      </button>
+                    ) : (
+                      <button
+                        className="show-more-button"
+                        type="button"
+                        onClick={
+                          showLessStandingsGroups
+                        }
+                      >
+                        Ver menos
+                      </button>
+                    )}
+                  </div>
+                )}
             </>
           ) : (
-            <StandingsTable standings={standings} />
+            <StandingsTable
+              standings={standings}
+            />
           )}
         </section>
 
-        <section className="card navigation-section" id="goleadores">
+        <section
+          className="card navigation-section"
+          id="goleadores"
+        >
           <div className="section-title">
             <p>Ranking</p>
+
             <h2>Goleadores</h2>
           </div>
 
           <ScorersTable
-            scorers={currentTournament.scorers}
+            scorers={
+              currentTournament.scorers
+            }
             isAdmin={isAdmin}
             onDelete={deleteScorer}
           />
@@ -1196,16 +1556,22 @@ function App() {
       </section>
 
       {category === 'masculino' && (
-        <section className="card navigation-section" id="eliminatorias">
+        <section
+          className="card navigation-section"
+          id="eliminatorias"
+        >
           <div className="section-title">
             <p>Fase final</p>
+
             <h2>Eliminatorias</h2>
           </div>
 
           <div className="knockout-grid">
             {currentTournament.matches
               .filter(
-                (match) => match.phase.toLowerCase() !== 'grupos',
+                (match) =>
+                  match.phase.toLowerCase() !==
+                  'grupos',
               )
               .map((match) => (
                 <MatchCard
@@ -1224,29 +1590,40 @@ function App() {
 
       <nav
         className={`mobile-quick-nav ${
-          isMobileNavOpen ? 'is-open' : ''
+          isMobileNavOpen
+            ? 'is-open'
+            : ''
         }`}
         aria-label="Navegación rápida"
       >
         <div className="mobile-quick-nav__panel">
-          {mobileNavigationItems.map((navigationItem) => (
-            <button
-              className={`mobile-quick-nav__item ${
-                activeSection === navigationItem.id ? 'is-active' : ''
-              }`}
-              type="button"
-              key={navigationItem.id}
-              onClick={() => scrollToSection(navigationItem.id)}
-            >
-              <span className="mobile-quick-nav__icon">
-                {navigationItem.icon}
-              </span>
+          {mobileNavigationItems.map(
+            (navigationItem) => (
+              <button
+                className={`mobile-quick-nav__item ${
+                  activeSection ===
+                  navigationItem.id
+                    ? 'is-active'
+                    : ''
+                }`}
+                type="button"
+                key={navigationItem.id}
+                onClick={() =>
+                  scrollToSection(
+                    navigationItem.id,
+                  )
+                }
+              >
+                <span className="mobile-quick-nav__icon">
+                  {navigationItem.icon}
+                </span>
 
-              <span className="mobile-quick-nav__label">
-                {navigationItem.label}
-              </span>
-            </button>
-          ))}
+                <span className="mobile-quick-nav__label">
+                  {navigationItem.label}
+                </span>
+              </button>
+            ),
+          )}
         </div>
 
         <button
@@ -1259,15 +1636,24 @@ function App() {
           }
           aria-expanded={isMobileNavOpen}
           onClick={() =>
-            setIsMobileNavOpen((previousState) => !previousState)
+            setIsMobileNavOpen(
+              (previousState) =>
+                !previousState,
+            )
           }
         >
-          <span aria-hidden="true">{isMobileNavOpen ? '×' : '☰'}</span>
+          <span aria-hidden="true">
+            {isMobileNavOpen ? '×' : '☰'}
+          </span>
         </button>
       </nav>
 
       <button
-        className={`admin-access-button ${isAdmin ? 'is-active' : ''}`}
+        className={`admin-access-button ${
+          isAdmin
+            ? 'is-active'
+            : ''
+        }`}
         type="button"
         title={
           isAdmin
@@ -1289,12 +1675,18 @@ function App() {
           className="admin-login-backdrop"
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
               closeAdminLogin();
             }
           }}
         >
-          <form className="admin-login" onSubmit={loginAsAdmin}>
+          <form
+            className="admin-login"
+            onSubmit={loginAsAdmin}
+          >
             <button
               className="admin-login__close"
               type="button"
@@ -1304,33 +1696,46 @@ function App() {
               ×
             </button>
 
-            <p className="admin-login__eyebrow">Acceso restringido</p>
+            <p className="admin-login__eyebrow">
+              Acceso restringido
+            </p>
 
             <h2>Modo administrador</h2>
 
             <p className="admin-login__description">
-              Ingrese la contraseña para administrar los datos del torneo.
+              Ingrese la contraseña para
+              administrar los datos del
+              torneo.
             </p>
 
             <label>
               Contraseña
+
               <input
                 type="password"
                 value={adminPassword}
                 autoFocus
                 autoComplete="current-password"
                 onChange={(event) => {
-                  setAdminPassword(event.target.value);
+                  setAdminPassword(
+                    event.target.value,
+                  );
+
                   setAdminError('');
                 }}
               />
             </label>
 
             {adminError && (
-              <p className="admin-login__error">{adminError}</p>
+              <p className="admin-login__error">
+                {adminError}
+              </p>
             )}
 
-            <button className="admin-login__submit" type="submit">
+            <button
+              className="admin-login__submit"
+              type="submit"
+            >
               Entrar
             </button>
           </form>
@@ -1339,6 +1744,10 @@ function App() {
     </main>
   );
 }
+
+// ======================================================
+// MATCH CARD
+// ======================================================
 
 function MatchCard({
   match,
@@ -1353,17 +1762,25 @@ function MatchCard({
     : 'general';
 
   return (
-    <article className={`match-card match-card--group-${normalizedGroup}`}>
+    <article
+      className={`match-card match-card--group-${normalizedGroup}`}
+    >
       <div className="match-card__top">
-        <span className="match-card__phase">{match.phase}</span>
+        <span className="match-card__phase">
+          {match.phase}
+        </span>
 
         {match.group && (
-          <span className="match-card__group">Grupo {match.group}</span>
+          <span className="match-card__group">
+            Grupo {match.group}
+          </span>
         )}
       </div>
 
       <div className="match-card__teams">
-        <strong>{match.homeTeam}</strong>
+        <strong>
+          {match.homeTeam}
+        </strong>
 
         <div className="match-card__score">
           {isAdmin ? (
@@ -1374,7 +1791,11 @@ function MatchCard({
                 value={match.homeScore}
                 aria-label={`Marcador de ${match.homeTeam}`}
                 onChange={(event) =>
-                  onUpdate(match.id, 'homeScore', event.target.value)
+                  onUpdate(
+                    match.id,
+                    'homeScore',
+                    event.target.value,
+                  )
                 }
               />
 
@@ -1386,46 +1807,71 @@ function MatchCard({
                 value={match.awayScore}
                 aria-label={`Marcador de ${match.awayTeam}`}
                 onChange={(event) =>
-                  onUpdate(match.id, 'awayScore', event.target.value)
+                  onUpdate(
+                    match.id,
+                    'awayScore',
+                    event.target.value,
+                  )
                 }
               />
             </>
           ) : match.played ? (
             <strong>
-              {match.homeScore} - {match.awayScore}
+              {match.homeScore} -{' '}
+              {match.awayScore}
             </strong>
           ) : (
             <strong>vs</strong>
           )}
         </div>
 
-        <strong>{match.awayTeam}</strong>
+        <strong>
+          {match.awayTeam}
+        </strong>
       </div>
 
       <div className="match-card__footer">
         <span className="match-card__week">
-          {match.week || 'Semana por definir'}
+          {match.week ||
+            'Semana por definir'}
         </span>
 
-        <span>{formatDate(match.date)}</span>
+        <span>
+          {formatDate(match.date)}
+        </span>
 
-        <span>{match.time || 'Hora por definir'}</span>
+        <span>
+          {match.time ||
+            'Hora por definir'}
+        </span>
       </div>
 
       {isAdmin && (
         <div className="match-card__admin">
-          <button type="button" onClick={() => onSave(match.id)}>
+          <button
+            type="button"
+            onClick={() =>
+              onSave(match.id)
+            }
+          >
             Guardar resultado
           </button>
 
-          <button type="button" onClick={() => onPending(match.id)}>
+          <button
+            type="button"
+            onClick={() =>
+              onPending(match.id)
+            }
+          >
             Marcar pendiente
           </button>
 
           <button
             className="danger"
             type="button"
-            onClick={() => onDelete(match.id)}
+            onClick={() =>
+              onDelete(match.id)
+            }
           >
             Eliminar
           </button>
@@ -1435,7 +1881,13 @@ function MatchCard({
   );
 }
 
-function StandingsTable({ standings }) {
+// ======================================================
+// STANDINGS TABLE
+// ======================================================
+
+function StandingsTable({
+  standings,
+}) {
   return (
     <div className="table-wrapper">
       <table>
@@ -1456,17 +1908,42 @@ function StandingsTable({ standings }) {
         <tbody>
           {standings.map((row) => (
             <tr key={row.team.id}>
-              <td>{row.team.name}</td>
-              <td>{row.played}</td>
-              <td>{row.won}</td>
-              <td>{row.drawn}</td>
-              <td>{row.lost}</td>
-              <td>{row.goalsFor}</td>
-              <td>{row.goalsAgainst}</td>
-              <td>{row.goalDifference}</td>
+              <td>
+                {row.team.name}
+              </td>
 
               <td>
-                <strong>{row.points}</strong>
+                {row.played}
+              </td>
+
+              <td>
+                {row.won}
+              </td>
+
+              <td>
+                {row.drawn}
+              </td>
+
+              <td>
+                {row.lost}
+              </td>
+
+              <td>
+                {row.goalsFor}
+              </td>
+
+              <td>
+                {row.goalsAgainst}
+              </td>
+
+              <td>
+                {row.goalDifference}
+              </td>
+
+              <td>
+                <strong>
+                  {row.points}
+                </strong>
               </td>
             </tr>
           ))}
@@ -1476,102 +1953,179 @@ function StandingsTable({ standings }) {
   );
 }
 
-function ScorersTable({ scorers, isAdmin, onDelete }) {
-  const sortedScorers = [...scorers].sort(
-    (firstScorer, secondScorer) => secondScorer.goals - firstScorer.goals,
+// ======================================================
+// SCORERS TABLE
+// ======================================================
+
+function ScorersTable({
+  scorers,
+  isAdmin,
+  onDelete,
+}) {
+  const sortedScorers = [
+    ...scorers,
+  ].sort(
+    (
+      firstScorer,
+      secondScorer,
+    ) =>
+      secondScorer.goals -
+      firstScorer.goals,
   );
 
   return (
     <div className="scorers-list">
-      {sortedScorers.length === 0 && (
+      {sortedScorers.length ===
+        0 && (
         <p className="empty-message">
-          Todavía no hay goleadores registrados.
+          Todavía no hay goleadores
+          registrados.
         </p>
       )}
 
-      {sortedScorers.map((scorer, index) => (
-        <article className="scorer-row" key={scorer.id}>
-          <span className="scorer-row__position">#{index + 1}</span>
+      {sortedScorers.map(
+        (scorer, index) => (
+          <article
+            className="scorer-row"
+            key={scorer.id}
+          >
+            <span className="scorer-row__position">
+              #{index + 1}
+            </span>
 
-          <div>
-            <strong>{scorer.name}</strong>
-            <p>{scorer.team}</p>
-          </div>
+            <div>
+              <strong>
+                {scorer.name}
+              </strong>
 
-          <span className="scorer-row__goals">{scorer.goals}</span>
+              <p>
+                {scorer.team}
+              </p>
+            </div>
 
-          {isAdmin && (
-            <button
-              type="button"
-              aria-label={`Eliminar a ${scorer.name}`}
-              onClick={() => onDelete(scorer.id)}
-            >
-              ×
-            </button>
-          )}
-        </article>
-      ))}
+            <span className="scorer-row__goals">
+              {scorer.goals}
+            </span>
+
+            {isAdmin && (
+              <button
+                type="button"
+                aria-label={`Eliminar a ${scorer.name}`}
+                onClick={() =>
+                  onDelete(scorer.id)
+                }
+              >
+                ×
+              </button>
+            )}
+          </article>
+        ),
+      )}
     </div>
   );
 }
 
-function calculateStandings(teams, matches) {
-  const rows = teams.map((team) => ({
-    team,
-    played: 0,
-    won: 0,
-    drawn: 0,
-    lost: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    goalDifference: 0,
-    points: 0,
-  }));
+// ======================================================
+// CALCULAR POSICIONES
+// ======================================================
+
+function calculateStandings(
+  teams,
+  matches,
+) {
+  const rows = teams.map(
+    (team) => ({
+      team,
+
+      played: 0,
+
+      won: 0,
+
+      drawn: 0,
+
+      lost: 0,
+
+      goalsFor: 0,
+
+      goalsAgainst: 0,
+
+      goalDifference: 0,
+
+      points: 0,
+    }),
+  );
 
   matches
     .filter((match) => match.played)
     .forEach((match) => {
       const homeRow = rows.find(
-        (row) => row.team.name === match.homeTeam,
+        (row) =>
+          row.team.name ===
+          match.homeTeam,
       );
 
       const awayRow = rows.find(
-        (row) => row.team.name === match.awayTeam,
+        (row) =>
+          row.team.name ===
+          match.awayTeam,
       );
 
       if (!homeRow || !awayRow) {
         return;
       }
 
-      const homeScore = Number(match.homeScore);
-      const awayScore = Number(match.awayScore);
+      const homeScore = Number(
+        match.homeScore,
+      );
 
-      if (Number.isNaN(homeScore) || Number.isNaN(awayScore)) {
+      const awayScore = Number(
+        match.awayScore,
+      );
+
+      if (
+        Number.isNaN(homeScore) ||
+        Number.isNaN(awayScore)
+      ) {
         return;
       }
 
       homeRow.played += 1;
+
       awayRow.played += 1;
 
-      homeRow.goalsFor += homeScore;
-      homeRow.goalsAgainst += awayScore;
+      homeRow.goalsFor +=
+        homeScore;
 
-      awayRow.goalsFor += awayScore;
-      awayRow.goalsAgainst += homeScore;
+      homeRow.goalsAgainst +=
+        awayScore;
+
+      awayRow.goalsFor +=
+        awayScore;
+
+      awayRow.goalsAgainst +=
+        homeScore;
 
       if (homeScore > awayScore) {
         homeRow.won += 1;
+
         homeRow.points += 3;
+
         awayRow.lost += 1;
-      } else if (homeScore < awayScore) {
+      } else if (
+        homeScore < awayScore
+      ) {
         awayRow.won += 1;
+
         awayRow.points += 3;
+
         homeRow.lost += 1;
       } else {
         homeRow.drawn += 1;
+
         awayRow.drawn += 1;
 
         homeRow.points += 1;
+
         awayRow.points += 1;
       }
     });
@@ -1579,26 +2133,63 @@ function calculateStandings(teams, matches) {
   return rows
     .map((row) => ({
       ...row,
-      goalDifference: row.goalsFor - row.goalsAgainst,
+
+      goalDifference:
+        row.goalsFor -
+        row.goalsAgainst,
     }))
-    .sort((firstRow, secondRow) => {
-      if (secondRow.points !== firstRow.points) {
-        return secondRow.points - firstRow.points;
-      }
+    .sort(
+      (
+        firstRow,
+        secondRow,
+      ) => {
+        if (
+          secondRow.points !==
+          firstRow.points
+        ) {
+          return (
+            secondRow.points -
+            firstRow.points
+          );
+        }
 
-      if (secondRow.goalDifference !== firstRow.goalDifference) {
-        return secondRow.goalDifference - firstRow.goalDifference;
-      }
+        if (
+          secondRow.goalDifference !==
+          firstRow.goalDifference
+        ) {
+          return (
+            secondRow.goalDifference -
+            firstRow.goalDifference
+          );
+        }
 
-      return secondRow.goalsFor - firstRow.goalsFor;
-    });
+        return (
+          secondRow.goalsFor -
+          firstRow.goalsFor
+        );
+      },
+    );
 }
 
-function compareMatchesByDate(firstMatch, secondMatch, direction) {
-  const firstTimestamp = getMatchTimestamp(firstMatch);
-  const secondTimestamp = getMatchTimestamp(secondMatch);
+// ======================================================
+// ORDENAR PARTIDOS
+// ======================================================
 
-  if (firstTimestamp === null && secondTimestamp === null) {
+function compareMatchesByDate(
+  firstMatch,
+  secondMatch,
+  direction,
+) {
+  const firstTimestamp =
+    getMatchTimestamp(firstMatch);
+
+  const secondTimestamp =
+    getMatchTimestamp(secondMatch);
+
+  if (
+    firstTimestamp === null &&
+    secondTimestamp === null
+  ) {
     return 0;
   }
 
@@ -1610,11 +2201,19 @@ function compareMatchesByDate(firstMatch, secondMatch, direction) {
     return -1;
   }
 
-  if (direction === 'descending') {
-    return secondTimestamp - firstTimestamp;
+  if (
+    direction === 'descending'
+  ) {
+    return (
+      secondTimestamp -
+      firstTimestamp
+    );
   }
 
-  return firstTimestamp - secondTimestamp;
+  return (
+    firstTimestamp -
+    secondTimestamp
+  );
 }
 
 function getMatchTimestamp(match) {
@@ -1622,56 +2221,103 @@ function getMatchTimestamp(match) {
     return null;
   }
 
-  const normalizedTime = normalizeMatchTime(match.time);
-  const date = new Date(`${match.date}T${normalizedTime}`);
-  const timestamp = date.getTime();
+  const normalizedTime =
+    normalizeMatchTime(match.time);
 
-  return Number.isNaN(timestamp) ? null : timestamp;
+  const date = new Date(
+    `${match.date}T${normalizedTime}`,
+  );
+
+  const timestamp =
+    date.getTime();
+
+  return Number.isNaN(timestamp)
+    ? null
+    : timestamp;
 }
 
-function normalizeMatchTime(timeValue) {
+// ======================================================
+// NORMALIZAR HORAS
+// ======================================================
+
+function normalizeMatchTime(
+  timeValue,
+) {
   if (!timeValue) {
     return '00:00:00';
   }
 
-  const normalizedValue = String(timeValue)
+  const normalizedValue = String(
+    timeValue,
+  )
     .toLowerCase()
     .replace(/\./g, '')
     .replace(/\s/g, '');
 
-  const timeMatch = normalizedValue.match(/^(\d{1,2}):(\d{2})(am|pm)?$/);
+  const timeMatch =
+    normalizedValue.match(
+      /^(\d{1,2}):(\d{2})(am|pm)?$/,
+    );
 
   if (!timeMatch) {
     return '00:00:00';
   }
 
-  let hours = Number(timeMatch[1]);
-  const minutes = Number(timeMatch[2]);
-  const period = timeMatch[3];
+  let hours = Number(
+    timeMatch[1],
+  );
 
-  if (period === 'pm' && hours < 12) {
+  const minutes = Number(
+    timeMatch[2],
+  );
+
+  const period =
+    timeMatch[3];
+
+  if (
+    period === 'pm' &&
+    hours < 12
+  ) {
     hours += 12;
   }
 
-  if (period === 'am' && hours === 12) {
+  if (
+    period === 'am' &&
+    hours === 12
+  ) {
     hours = 0;
   }
 
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+  return `${String(hours).padStart(
+    2,
+    '0',
+  )}:${String(minutes).padStart(
+    2,
+    '0',
+  )}:00`;
 }
+
+// ======================================================
+// FORMATEAR FECHA
+// ======================================================
 
 function formatDate(dateValue) {
   if (!dateValue) {
     return 'Fecha por definir';
   }
 
-  const date = new Date(`${dateValue}T00:00:00`);
+  const date = new Date(
+    `${dateValue}T00:00:00`,
+  );
 
-  return new Intl.DateTimeFormat('es-CR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    'es-CR',
+    {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    },
+  ).format(date);
 }
 
 export default App;
