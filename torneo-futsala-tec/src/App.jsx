@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v4';
+const DATA_VERSION = 'v6';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
