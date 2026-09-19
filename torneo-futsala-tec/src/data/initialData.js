@@ -552,8 +552,8 @@ export const initialData = {
         time: '11:30 a.m.',
         week: 'Semana 6',
         played: true,
-        homeScore: 3,
-        awayScore: 0,
+        homeScore: 0,
+        awayScore: 3,
       },
       {
         id: 10,
