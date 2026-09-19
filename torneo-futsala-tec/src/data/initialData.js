@@ -551,9 +551,9 @@ export const initialData = {
         date: '2026-09-11',
         time: '11:30 a.m.',
         week: 'Semana 6',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 3,
+        awayScore: 0,
       },
       {
         id: 10,
@@ -564,9 +564,9 @@ export const initialData = {
         date: '2026-09-11',
         time: '12:10 p.m.',
         week: 'Semana 6',
-        played: false,
-        homeScore: '',
-        awayScore: '',
+        played: true,
+        homeScore: 0,
+        awayScore: 3,
       },
 
       // Semana 9
