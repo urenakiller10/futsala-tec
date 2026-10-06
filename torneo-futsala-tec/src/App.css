@@ -403,6 +403,160 @@ button {
   gap: 14px;
 }
 
+.bracket {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  grid-template-rows: repeat(8, 68px);
+  gap: 0 12px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  min-width: 980px;
+}
+
+.bracket__wires {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 544px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.bracket__wires path {
+  fill: none;
+  stroke: #9eb3d1;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bracket-match {
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto repeat(2, minmax(44px, 1fr));
+  overflow: hidden;
+  border: 1px solid #dce5f2;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(7, 27, 63, 0.07);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.bracket-match--qf-1 { grid-column: 1; grid-row: 1 / span 2; }
+.bracket-match--qf-2 { grid-column: 1; grid-row: 7 / span 2; }
+.bracket-match--qf-3 { grid-column: 5; grid-row: 1 / span 2; }
+.bracket-match--qf-4 { grid-column: 5; grid-row: 7 / span 2; }
+.bracket-match--sf-1 { grid-column: 2; grid-row: 4 / span 2; }
+.bracket-match--sf-2 { grid-column: 4; grid-row: 4 / span 2; }
+.bracket-match--final { grid-column: 3; grid-row: 4 / span 2; align-self: center; }
+
+.bracket-match:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(7, 27, 63, 0.12);
+}
+
+.bracket-match__date {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid #e7edf6;
+  background: #f8faff;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  white-space: normal;
+}
+
+.bracket-match__date span:first-child {
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bracket-match--stage-quarter .bracket-match__date {
+  background: #eff5ff;
+}
+
+.bracket-match--stage-semi {
+  border-color: #c9e7e2;
+}
+
+.bracket-match--stage-semi .bracket-match__date {
+  border-bottom-color: #dcefeb;
+  background: #edf8f5;
+}
+
+.bracket-match--stage-semi .bracket-match__date span:first-child {
+  color: #16766f;
+}
+
+.bracket-match--stage-final {
+  border-color: #e6d4a6;
+  box-shadow: 0 10px 26px rgba(133, 98, 26, 0.14);
+}
+
+.bracket-match--stage-final .bracket-match__date {
+  border-bottom-color: #eadfbe;
+  background: #fbf5e5;
+}
+
+.bracket-match--stage-final .bracket-match__date span:first-child {
+  color: #8a6518;
+}
+
+.bracket-match__team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 0;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.bracket-match__team + .bracket-match__team { border-top: 1px solid #edf1f7; }
+.bracket-match__team span { color: var(--text); }
+.bracket-match__team b { color: #aeb8c7; font-size: 14px; font-weight: 600; }
+@media (max-width: 760px) {
+  .bracket {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+    grid-auto-rows: auto;
+    gap: 12px;
+    min-width: 0;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .bracket__wires { display: none; }
+  .bracket-match { min-width: 0; }
+  .bracket-match--qf-1 { grid-column: 1; grid-row: 1; }
+  .bracket-match--qf-2 { grid-column: 2; grid-row: 1; }
+  .bracket-match--qf-3 { grid-column: 1; grid-row: 2; }
+  .bracket-match--qf-4 { grid-column: 2; grid-row: 2; }
+  .bracket-match--sf-1 { grid-column: 1; grid-row: 3; }
+  .bracket-match--sf-2 { grid-column: 2; grid-row: 3; }
+  .bracket-match--final {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    width: calc(50% - 6px);
+    justify-self: center;
+  }
+  .bracket-match__team { gap: 6px; padding: 7px 9px; font-size: 11px; }
+  .bracket-match__team span { min-width: 0; line-height: 1.15; }
+}
+
+@media (max-width: 420px) {
+  .bracket-match__date { gap: 4px 7px; padding: 8px; font-size: 8px; }
+  .bracket-match__team { padding: 6px 8px; }
+}
+
 .match-card {
   position: relative;
   padding: 16px 16px 16px 20px;

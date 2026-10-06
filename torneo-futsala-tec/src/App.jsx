@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v9';
+const DATA_VERSION = 'v10';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
@@ -1566,25 +1566,7 @@ function App() {
             <h2>Eliminatorias</h2>
           </div>
 
-          <div className="knockout-grid">
-            {currentTournament.matches
-              .filter(
-                (match) =>
-                  match.phase.toLowerCase() !==
-                  'grupos',
-              )
-              .map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  isAdmin={isAdmin}
-                  onUpdate={updateMatch}
-                  onSave={saveResult}
-                  onPending={markAsPending}
-                  onDelete={deleteMatch}
-                />
-              ))}
-          </div>
+          <KnockoutBracket standings={standings} />
         </section>
       )}
 
@@ -1742,6 +1724,53 @@ function App() {
         </div>
       )}
     </main>
+  );
+}
+
+function KnockoutBracket({ standings }) {
+  const position = (group, place) => {
+    const groupRows = standings
+      .filter((row) => row.team.group === group)
+      .sort((first, second) =>
+        second.points - first.points
+        || second.goalDifference - first.goalDifference
+        || second.goalsFor - first.goalsFor);
+    const complete = groupRows.length === 4 && groupRows.every((row) => row.played === 3);
+    return complete
+      ? groupRows[place - 1].team.name
+      : `${place === 1 ? '1.º' : '2.º'} ${group}`;
+  };
+
+  const matches = [
+    { id: 'qf-1', label: 'Cuartos de final 1', home: position('A', 1), away: position('B', 2) },
+    { id: 'qf-2', label: 'Cuartos de final 2', home: position('B', 1), away: position('A', 2) },
+    { id: 'qf-3', label: 'Cuartos de final 3', home: position('C', 1), away: position('D', 2) },
+    { id: 'qf-4', label: 'Cuartos de final 4', home: position('D', 1), away: position('C', 2) },
+    { id: 'sf-1', label: 'Semifinal 1', home: 'Ganador cuarto 1', away: 'Ganador cuarto 2' },
+    { id: 'sf-2', label: 'Semifinal 2', home: 'Ganador cuarto 3', away: 'Ganador cuarto 4' },
+    { id: 'final', label: 'Final', home: 'Ganador semifinal 1', away: 'Ganador semifinal 2' },
+  ];
+
+  return (
+    <div className="bracket" aria-label="Llaves de eliminación">
+      <svg className="bracket__wires" viewBox="0 0 1000 544" preserveAspectRatio="none" aria-hidden="true">
+        <g>
+          <path d="M180 68 H205 V272 H230 M180 476 H205 V272" />
+          <path d="M770 272 H795 V68 H820 M770 272 H795 V476 H820" />
+          <path d="M370 272 H480 M630 272 H520" />
+        </g>
+      </svg>
+      {matches.map((match) => (
+        <article className={`bracket-match bracket-match--${match.id} bracket-match--stage-${match.id.startsWith('qf') ? 'quarter' : match.id.startsWith('sf') ? 'semi' : 'final'}`} key={match.id}>
+          <div className="bracket-match__date">
+            <span>{match.label}</span>
+            <span>Fecha: Por definir</span>
+          </div>
+          <div className="bracket-match__team"><span>{match.home}</span><b>—</b></div>
+          <div className="bracket-match__team"><span>{match.away}</span><b>—</b></div>
+        </article>
+      ))}
+    </div>
   );
 }
 
