@@ -445,9 +445,9 @@ button {
 }
 
 .bracket-match--qf-1 { grid-column: 1; grid-row: 1 / span 2; }
-.bracket-match--qf-2 { grid-column: 1; grid-row: 7 / span 2; }
+.bracket-match--qf-2 { grid-column: 5; grid-row: 7 / span 2; }
 .bracket-match--qf-3 { grid-column: 5; grid-row: 1 / span 2; }
-.bracket-match--qf-4 { grid-column: 5; grid-row: 7 / span 2; }
+.bracket-match--qf-4 { grid-column: 1; grid-row: 7 / span 2; }
 .bracket-match--sf-1 { grid-column: 2; grid-row: 4 / span 2; }
 .bracket-match--sf-2 { grid-column: 4; grid-row: 4 / span 2; }
 .bracket-match--final { grid-column: 3; grid-row: 4 / span 2; align-self: center; }
@@ -537,9 +537,9 @@ button {
   .bracket__wires { display: none; }
   .bracket-match { min-width: 0; }
   .bracket-match--qf-1 { grid-column: 1; grid-row: 1; }
-  .bracket-match--qf-2 { grid-column: 2; grid-row: 1; }
-  .bracket-match--qf-3 { grid-column: 1; grid-row: 2; }
-  .bracket-match--qf-4 { grid-column: 2; grid-row: 2; }
+  .bracket-match--qf-2 { grid-column: 2; grid-row: 2; }
+  .bracket-match--qf-3 { grid-column: 2; grid-row: 1; }
+  .bracket-match--qf-4 { grid-column: 1; grid-row: 2; }
   .bracket-match--sf-1 { grid-column: 1; grid-row: 3; }
   .bracket-match--sf-2 { grid-column: 2; grid-row: 3; }
   .bracket-match--final {
