@@ -557,6 +557,27 @@ button {
   .bracket-match__team { padding: 6px 8px; }
 }
 
+.bracket--femenino {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto;
+  gap: 12px;
+  min-width: 0;
+}
+
+.bracket--femenino .bracket-match--sf-1 { grid-column: 1; grid-row: 1; }
+.bracket--femenino .bracket-match--final { grid-column: 2; grid-row: 1; width: 100%; }
+.bracket--femenino .bracket-match--sf-2 { grid-column: 3; grid-row: 1; }
+
+@media (max-width: 760px) {
+  .bracket--femenino { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bracket--femenino .bracket-match--sf-2 { grid-column: 2; grid-row: 1; }
+  .bracket--femenino .bracket-match--final {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: calc(50% - 6px);
+  }
+}
+
 .match-card {
   position: relative;
   padding: 16px 16px 16px 20px;
@@ -748,6 +769,16 @@ button {
 
 .match-card__week {
   color: var(--blue);
+}
+
+.match-card__note {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .match-card__admin {

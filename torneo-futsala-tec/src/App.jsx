@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v10';
+const DATA_VERSION = 'v12';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
@@ -112,15 +112,11 @@ function App() {
       label: 'Goleadores',
       icon: 'G',
     },
-    ...(category === 'masculino'
-      ? [
-          {
-            id: 'eliminatorias',
-            label: 'Eliminatorias',
-            icon: 'E',
-          },
-        ]
-      : []),
+    {
+      id: 'eliminatorias',
+      label: 'Eliminatorias',
+      icon: 'E',
+    },
   ];
 
   // Guarda los cambios hechos desde el navegador para esta
@@ -245,12 +241,34 @@ function App() {
     0,
   );
 
+  const standings = useMemo(() => {
+    return calculateStandings(currentTournament.teams, currentTournament.matches);
+  }, [currentTournament.teams, currentTournament.matches]);
+
+  const matches = useMemo(() => {
+    const groupStageComplete = standings.length > 0 && standings.every(
+      (row) => row.played >= currentTournament.teams.length - 1,
+    );
+
+    return currentTournament.matches.map((match) => {
+      if (!match.knockout || match.played || !groupStageComplete) {
+        return match;
+      }
+
+      return {
+        ...match,
+        homeTeam: standings[match.homeSeed - 1]?.team.name ?? match.homeTeam,
+        awayTeam: standings[match.awaySeed - 1]?.team.name ?? match.awayTeam,
+      };
+    });
+  }, [currentTournament.matches, currentTournament.teams.length, standings]);
+
   // ======================================================
   // PRÓXIMOS PARTIDOS
   // ======================================================
 
   const upcomingMatches = useMemo(() => {
-    const filteredMatches = currentTournament.matches.filter((match) => {
+    const filteredMatches = matches.filter((match) => {
       if (match.played) {
         return false;
       }
@@ -265,14 +283,14 @@ function App() {
     return [...filteredMatches].sort((firstMatch, secondMatch) =>
       compareMatchesByDate(firstMatch, secondMatch, 'ascending'),
     );
-  }, [currentTournament.matches, upcomingGroupFilter, groups]);
+  }, [matches, upcomingGroupFilter, groups]);
 
   // ======================================================
   // PARTIDOS JUGADOS
   // ======================================================
 
   const playedMatches = useMemo(() => {
-    const filteredMatches = currentTournament.matches.filter((match) => {
+    const filteredMatches = matches.filter((match) => {
       if (!match.played) {
         return false;
       }
@@ -287,7 +305,7 @@ function App() {
     return [...filteredMatches].sort((firstMatch, secondMatch) =>
       compareMatchesByDate(firstMatch, secondMatch, 'descending'),
     );
-  }, [currentTournament.matches, playedGroupFilter, groups]);
+  }, [matches, playedGroupFilter, groups]);
 
   const displayedUpcomingMatches = isMobile
     ? upcomingMatches.slice(0, visibleUpcomingMatches)
@@ -306,17 +324,6 @@ function App() {
     playedMatches.length - visiblePlayedMatches,
     0,
   );
-
-  // ======================================================
-  // TABLA DE POSICIONES
-  // ======================================================
-
-  const standings = useMemo(() => {
-    return calculateStandings(
-      currentTournament.teams,
-      currentTournament.matches,
-    );
-  }, [currentTournament.teams, currentTournament.matches]);
 
   // ======================================================
   // NAVEGACIÓN
@@ -668,8 +675,21 @@ function App() {
         return match;
       }
 
+      const resolvedMatch = matches.find((item) => item.id === matchId);
+      if (match.knockout && (
+        !resolvedMatch ||
+        !currentTournament.teams.some((team) => team.name === resolvedMatch.homeTeam) ||
+        !currentTournament.teams.some((team) => team.name === resolvedMatch.awayTeam)
+      )) {
+        return match;
+      }
+
       return {
         ...match,
+
+        homeTeam: resolvedMatch.homeTeam,
+
+        awayTeam: resolvedMatch.awayTeam,
 
         homeScore,
 
@@ -1555,20 +1575,18 @@ function App() {
         </section>
       </section>
 
-      {category === 'masculino' && (
-        <section
-          className="card navigation-section"
-          id="eliminatorias"
-        >
-          <div className="section-title">
-            <p>Fase final</p>
+      <section
+        className="card navigation-section"
+        id="eliminatorias"
+      >
+        <div className="section-title">
+          <p>Fase final</p>
 
-            <h2>Eliminatorias</h2>
-          </div>
+          <h2>Eliminatorias</h2>
+        </div>
 
-          <KnockoutBracket standings={standings} />
-        </section>
-      )}
+        <KnockoutBracket standings={standings} category={category} matches={matches} />
+      </section>
 
       <nav
         className={`mobile-quick-nav ${
@@ -1727,47 +1745,59 @@ function App() {
   );
 }
 
-function KnockoutBracket({ standings }) {
+function KnockoutBracket({ standings, category, matches }) {
   const position = (group, place) => {
-    const groupRows = standings
-      .filter((row) => row.team.group === group)
-      .sort((first, second) =>
-        second.points - first.points
-        || second.goalDifference - first.goalDifference
-        || second.goalsFor - first.goalsFor);
+    const groupRows = standings.filter((row) => row.team.group === group);
     const complete = groupRows.length === 4 && groupRows.every((row) => row.played === 3);
-    return complete
-      ? groupRows[place - 1].team.name
-      : `${place === 1 ? '1.º' : '2.º'} ${group}`;
+    return complete ? groupRows[place - 1].team.name : `${place}.º ${group}`;
   };
 
-  const matches = [
-    { id: 'qf-1', label: 'Cuartos de final 1', home: position('A', 1), away: position('B', 2) },
-    { id: 'qf-2', label: 'Cuartos de final 2', home: position('B', 1), away: position('A', 2) },
-    { id: 'qf-3', label: 'Cuartos de final 3', home: position('C', 1), away: position('D', 2) },
-    { id: 'qf-4', label: 'Cuartos de final 4', home: position('D', 1), away: position('C', 2) },
-    { id: 'sf-1', label: 'Semifinal 1', home: 'Ganador cuarto 1', away: 'Ganador cuarto 2' },
-    { id: 'sf-2', label: 'Semifinal 2', home: 'Ganador cuarto 3', away: 'Ganador cuarto 4' },
-    { id: 'final', label: 'Final', home: 'Ganador semifinal 1', away: 'Ganador semifinal 2' },
-  ];
+  const winner = (match, fallback) => {
+    if (!match?.played || Number(match.homeScore) === Number(match.awayScore)) {
+      return fallback;
+    }
+    return Number(match.homeScore) > Number(match.awayScore) ? match.homeTeam : match.awayTeam;
+  };
+
+  const semi1 = matches.find((match) => match.knockout === 'sf-1');
+  const semi2 = matches.find((match) => match.knockout === 'sf-2');
+  const bracketMatches = category === 'femenino'
+    ? [
+        ...[semi1, semi2].filter(Boolean).map((match) => ({
+          id: match.knockout, label: match.phase, home: match.homeTeam, away: match.awayTeam,
+          date: match.date, time: match.time, homeScore: match.homeScore, awayScore: match.awayScore, played: match.played,
+        })),
+        { id: 'final', label: 'Final', home: winner(semi1, 'Ganador semifinal 1'), away: winner(semi2, 'Ganador semifinal 2'), date: '2026-11-20', time: '11:30 a.m.' },
+      ]
+    : [
+        { id: 'qf-1', label: 'Cuartos de final 1', home: position('A', 1), away: position('B', 2), date: '2026-11-06', time: '11:30 a.m.' },
+        { id: 'qf-2', label: 'Cuartos de final 2', home: position('B', 1), away: position('A', 2), date: '2026-11-06', time: '12:10 p.m.' },
+        { id: 'qf-3', label: 'Cuartos de final 3', home: position('C', 1), away: position('D', 2), date: '2026-11-11', time: '11:30 a.m.' },
+        { id: 'qf-4', label: 'Cuartos de final 4', home: position('D', 1), away: position('C', 2), date: '2026-11-11', time: '12:10 p.m.' },
+        { id: 'sf-1', label: 'Semifinal 1', home: 'Ganador cuarto 1', away: 'Ganador cuarto 2', date: '2026-11-18', time: '11:30 a.m.' },
+        { id: 'sf-2', label: 'Semifinal 2', home: 'Ganador cuarto 3', away: 'Ganador cuarto 4', date: '2026-11-18', time: '12:10 p.m.' },
+        { id: 'final', label: 'Final', home: 'Ganador semifinal 1', away: 'Ganador semifinal 2', date: '2026-11-20', time: '12:10 p.m.' },
+      ];
 
   return (
-    <div className="bracket" aria-label="Llaves de eliminación">
-      <svg className="bracket__wires" viewBox="0 0 1000 544" preserveAspectRatio="none" aria-hidden="true">
-        <g>
-          <path d="M180 68 H205 V272 H230 M180 476 H205 V272" />
-          <path d="M770 272 H795 V68 H820 M770 272 H795 V476 H820" />
-          <path d="M370 272 H480 M630 272 H520" />
-        </g>
-      </svg>
-      {matches.map((match) => (
+    <div className={`bracket ${category === 'femenino' ? 'bracket--femenino' : ''}`} aria-label="Llaves de eliminación">
+      {category === 'masculino' && (
+        <svg className="bracket__wires" viewBox="0 0 1000 544" preserveAspectRatio="none" aria-hidden="true">
+          <g>
+            <path d="M180 68 H205 V272 H230 M180 476 H205 V272" />
+            <path d="M770 272 H795 V68 H820 M770 272 H795 V476 H820" />
+            <path d="M370 272 H480 M630 272 H520" />
+          </g>
+        </svg>
+      )}
+      {bracketMatches.map((match) => (
         <article className={`bracket-match bracket-match--${match.id} bracket-match--stage-${match.id.startsWith('qf') ? 'quarter' : match.id.startsWith('sf') ? 'semi' : 'final'}`} key={match.id}>
           <div className="bracket-match__date">
             <span>{match.label}</span>
-            <span>Fecha: Por definir</span>
+            <span>{formatDate(match.date)} · {match.time}</span>
           </div>
-          <div className="bracket-match__team"><span>{match.home}</span><b>—</b></div>
-          <div className="bracket-match__team"><span>{match.away}</span><b>—</b></div>
+          <div className="bracket-match__team"><span>{match.home}</span><b>{match.played ? match.homeScore : '—'}</b></div>
+          <div className="bracket-match__team"><span>{match.away}</span><b>{match.played ? match.awayScore : '—'}</b></div>
         </article>
       ))}
     </div>
@@ -2085,7 +2115,7 @@ function calculateStandings(
   );
 
   matches
-    .filter((match) => match.played)
+    .filter((match) => match.played && !match.knockout)
     .forEach((match) => {
       const homeRow = rows.find(
         (row) =>

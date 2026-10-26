@@ -520,7 +520,7 @@ export const initialData = {
 
 
 
-      // Fecha 3 - Semana 10
+      // Fecha 3 - Semana 13
 
       {
 
@@ -534,11 +534,11 @@ export const initialData = {
 
         awayTeam: 'Produ FC',
 
-        date: '2026-10-09',
+        date: '2026-10-30',
 
         time: '11:30 a.m.',
 
-        week: 'Semana 10',
+        week: 'Semana 13',
 
         played: false,
 
@@ -560,11 +560,11 @@ export const initialData = {
 
         awayTeam: 'Agricola FC',
 
-        date: '2026-10-09',
+        date: '2026-10-30',
 
         time: '12:10 p.m.',
 
-        week: 'Semana 10',
+        week: 'Semana 13',
 
         played: false,
 
@@ -692,11 +692,11 @@ export const initialData = {
 
         week: 'Semana 12',
 
-        played: false,
+        played: true,
 
-        homeScore: '',
+        homeScore: 3,
 
-        awayScore: '',
+        awayScore: 0,
 
       },
 
@@ -704,19 +704,19 @@ export const initialData = {
 
         id: 23,
 
-        phase: 'Grupos',
+        phase: 'Reposición',
 
         group: 'D',
 
-        homeTeam: 'ATI',
+        homeTeam: 'Computadores FC',
 
-        awayTeam: 'Computadores FC',
+        awayTeam: 'ATI',
 
-        date: '2026-10-23',
+        date: '2026-10-30',
 
-        time: '12:10 p.m.',
+        time: '1:00 p.m.',
 
-        week: 'Semana 12',
+        week: 'Semana 13',
 
         played: false,
 
@@ -1216,11 +1216,13 @@ export const initialData = {
 
         week: 'Semana 11',
 
-        played: false,
+        note: 'No se realiza porque no define posiciones en la tabla. Se registra como empate administrativo para completar los 5 partidos de ambos equipos.',
 
-        homeScore: '',
+        played: true,
 
-        awayScore: '',
+        homeScore: 0,
+
+        awayScore: 0,
 
       },
 
@@ -1276,6 +1278,39 @@ export const initialData = {
 
         awayScore: 3,
 
+      },
+
+      {
+        id: 16,
+        phase: 'Semifinal 1',
+        group: '',
+        homeTeam: '1.º',
+        awayTeam: '4.º',
+        homeSeed: 1,
+        awaySeed: 4,
+        knockout: 'sf-1',
+        date: '2026-11-13',
+        time: '11:30 a.m.',
+        week: 'Semana 15',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+      {
+        id: 17,
+        phase: 'Semifinal 2',
+        group: '',
+        homeTeam: '2.º',
+        awayTeam: '3.º',
+        homeSeed: 2,
+        awaySeed: 3,
+        knockout: 'sf-2',
+        date: '2026-11-13',
+        time: '12:10 p.m.',
+        week: 'Semana 15',
+        played: false,
+        homeScore: '',
+        awayScore: '',
       },
 
     ],
