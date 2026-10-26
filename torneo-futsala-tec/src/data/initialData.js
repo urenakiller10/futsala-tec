@@ -1363,7 +1363,7 @@ export const initialData = {
 
         team: 'Resistencia',
 
-        goals: 2,
+        goals: 3,
 
       },
 
