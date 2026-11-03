@@ -756,6 +756,66 @@ export const initialData = {
 
       },
 
+      {
+        id: 25,
+        phase: 'Cuartos de final 1',
+        group: '',
+        homeTeam: 'IDINETA',
+        awayTeam: 'Computación FC',
+        knockout: 'qf-1',
+        date: '2026-11-06',
+        time: '11:30 a.m.',
+        week: 'Semana 14',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
+      {
+        id: 26,
+        phase: 'Cuartos de final 2',
+        group: '',
+        homeTeam: 'MecaFutsal',
+        awayTeam: 'Mante FC',
+        knockout: 'qf-2',
+        date: '2026-11-06',
+        time: '12:10 p.m.',
+        week: 'Semana 14',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
+      {
+        id: 27,
+        phase: 'Cuartos de final 3',
+        group: '',
+        homeTeam: 'Admin',
+        awayTeam: 'ATI',
+        knockout: 'qf-3',
+        date: '2026-11-11',
+        time: '11:30 a.m.',
+        week: 'Semana 15',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
+      {
+        id: 28,
+        phase: 'Cuartos de final 4',
+        group: '',
+        homeTeam: 'ICO FC',
+        awayTeam: 'Produ FC',
+        knockout: 'qf-4',
+        date: '2026-11-11',
+        time: '12:10 p.m.',
+        week: 'Semana 15',
+        played: false,
+        homeScore: '',
+        awayScore: '',
+      },
+
     ],
 
 
