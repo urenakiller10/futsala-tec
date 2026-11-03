@@ -540,11 +540,11 @@ export const initialData = {
 
         week: 'Semana 13',
 
-        played: false,
+        played: true,
 
-        homeScore: '',
+        homeScore: 4,
 
-        awayScore: '',
+        awayScore: 3,
 
       },
 
@@ -566,11 +566,11 @@ export const initialData = {
 
         week: 'Semana 13',
 
-        played: false,
+        played: true,
 
-        homeScore: '',
+        homeScore: 3,
 
-        awayScore: '',
+        awayScore: 0,
 
       },
 
@@ -718,11 +718,11 @@ export const initialData = {
 
         week: 'Semana 13',
 
-        played: false,
+        played: true,
 
-        homeScore: '',
+        homeScore: 2,
 
-        awayScore: '',
+        awayScore: 4,
 
       },
 
@@ -763,6 +763,13 @@ export const initialData = {
     scorers: [
 
       {
+        id: 5,
+        name: 'Lázaro',
+        team: 'ATI',
+        goals: 6,
+      },
+
+      {
 
         id: 1,
 
@@ -770,7 +777,7 @@ export const initialData = {
 
         team: 'Admin',
 
-        goals: 6,
+        goals: 8,
 
       },
 
