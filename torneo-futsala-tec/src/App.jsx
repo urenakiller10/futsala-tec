@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v16';
+const DATA_VERSION = 'v18';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
@@ -81,6 +81,30 @@ function App() {
       }
     }
 
+    const previousData = localStorage.getItem('torneo-futsala-tec-data-v17') ?? localStorage.getItem('torneo-futsala-tec-data-v16');
+    if (previousData) {
+      try {
+        const migrated = JSON.parse(previousData);
+        migrated.masculino.matches = migrated.masculino.matches.map((match) => {
+          if (match.knockout === 'qf-2' && !match.played && match.homeTeam === 'MecaFutsal' && match.awayTeam === 'Mante FC') {
+            return { ...match, homeTeam: 'ICO FC', awayTeam: 'Produ FC', date: '2026-11-11', week: 'Semana 15' };
+          }
+          if (match.knockout === 'qf-4' && !match.played && match.homeTeam === 'ICO FC' && match.awayTeam === 'Produ FC') {
+            return { ...match, homeTeam: 'MecaFutsal', awayTeam: 'Mante FC', date: '2026-11-06', week: 'Semana 14' };
+          }
+          if (match.knockout === 'qf-2' && !match.played && match.homeTeam === 'ICO FC' && match.awayTeam === 'Produ FC' && match.date === '2026-11-06') {
+            return { ...match, date: '2026-11-11', week: 'Semana 15' };
+          }
+          if (match.knockout === 'qf-4' && !match.played && match.homeTeam === 'MecaFutsal' && match.awayTeam === 'Mante FC' && match.date === '2026-11-11') {
+            return { ...match, date: '2026-11-06', week: 'Semana 14' };
+          }
+          return match;
+        });
+        return migrated;
+      } catch {
+        // Fall back to the current initial data if the old data is invalid.
+      }
+    }
     return initialData;
   });
 
@@ -1771,9 +1795,9 @@ function KnockoutBracket({ standings, category, matches }) {
       ]
     : [
         { id: 'qf-1', label: 'Cuartos de final 1', home: position('A', 1), away: position('B', 2), date: '2026-11-06', time: '11:30 a.m.' },
-        { id: 'qf-2', label: 'Cuartos de final 2', home: position('B', 1), away: position('A', 2), date: '2026-11-06', time: '12:10 p.m.' },
+        { id: 'qf-2', label: 'Cuartos de final 2', home: position('D', 1), away: position('C', 2), date: '2026-11-11', time: '12:10 p.m.' },
         { id: 'qf-3', label: 'Cuartos de final 3', home: position('C', 1), away: position('D', 2), date: '2026-11-11', time: '11:30 a.m.' },
-        { id: 'qf-4', label: 'Cuartos de final 4', home: position('D', 1), away: position('C', 2), date: '2026-11-11', time: '12:10 p.m.' },
+        { id: 'qf-4', label: 'Cuartos de final 4', home: position('B', 1), away: position('A', 2), date: '2026-11-06', time: '12:10 p.m.' },
         { id: 'sf-1', label: 'Semifinal 1', home: 'Ganador cuarto 1', away: 'Ganador cuarto 2', date: '2026-11-18', time: '11:30 a.m.' },
         { id: 'sf-2', label: 'Semifinal 2', home: 'Ganador cuarto 3', away: 'Ganador cuarto 4', date: '2026-11-18', time: '12:10 p.m.' },
         { id: 'final', label: 'Final', home: 'Ganador semifinal 1', away: 'Ganador semifinal 2', date: '2026-11-20', time: '12:10 p.m.' },
