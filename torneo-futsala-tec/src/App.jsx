@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v20';
+const DATA_VERSION = 'v21';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
@@ -90,7 +90,7 @@ function App() {
             return { ...match, homeTeam: 'ICO FC', awayTeam: 'Produ FC', date: '2026-11-06', time: '12:10 p.m.', week: 'Semana 14' };
           }
           if (match.knockout === 'qf-3' && !match.played) {
-            return { ...match, homeTeam: 'Admin', awayTeam: 'ATI', date: '2026-11-11', time: '12:10 p.m.', week: 'Semana 15' };
+            return { ...match, homeTeam: 'ATI', awayTeam: 'Admin', date: '2026-11-11', time: '12:10 p.m.', week: 'Semana 15' };
           }
           if (match.knockout === 'qf-4' && !match.played) {
             return { ...match, homeTeam: 'MecaFutsal', awayTeam: 'Mante FC', date: '2026-11-11', time: '11:30 a.m.', week: 'Semana 15' };
