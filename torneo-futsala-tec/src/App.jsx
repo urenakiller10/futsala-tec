@@ -11,7 +11,7 @@ import futsalaTecShield from './assets/futsala tec.jpeg';
 // Cada vez que initialData cambie y quieras que todos los usuarios
 // reciban los nuevos datos, aumenta esta versión:
 // v4 -> v5 -> v6...
-const DATA_VERSION = 'v19';
+const DATA_VERSION = 'v20';
 
 const STORAGE_KEY = `torneo-futsala-tec-data-${DATA_VERSION}`;
 
@@ -81,22 +81,19 @@ function App() {
       }
     }
 
-    const previousData = localStorage.getItem('torneo-futsala-tec-data-v17') ?? localStorage.getItem('torneo-futsala-tec-data-v16');
+    const previousData = localStorage.getItem('torneo-futsala-tec-data-v19') ?? localStorage.getItem('torneo-futsala-tec-data-v17') ?? localStorage.getItem('torneo-futsala-tec-data-v16');
     if (previousData) {
       try {
         const migrated = JSON.parse(previousData);
         migrated.masculino.matches = migrated.masculino.matches.map((match) => {
-          if (match.knockout === 'qf-2' && !match.played && match.homeTeam === 'MecaFutsal' && match.awayTeam === 'Mante FC') {
-            return { ...match, homeTeam: 'ICO FC', awayTeam: 'Produ FC', date: '2026-11-11', week: 'Semana 15' };
+          if (match.knockout === 'qf-2' && !match.played) {
+            return { ...match, homeTeam: 'ICO FC', awayTeam: 'Produ FC', date: '2026-11-06', time: '12:10 p.m.', week: 'Semana 14' };
           }
-          if (match.knockout === 'qf-4' && !match.played && match.homeTeam === 'ICO FC' && match.awayTeam === 'Produ FC') {
-            return { ...match, homeTeam: 'MecaFutsal', awayTeam: 'Mante FC', date: '2026-11-06', week: 'Semana 14' };
+          if (match.knockout === 'qf-3' && !match.played) {
+            return { ...match, homeTeam: 'Admin', awayTeam: 'ATI', date: '2026-11-11', time: '12:10 p.m.', week: 'Semana 15' };
           }
-          if (match.knockout === 'qf-2' && !match.played && match.homeTeam === 'ICO FC' && match.awayTeam === 'Produ FC' && match.date === '2026-11-06') {
-            return { ...match, date: '2026-11-11', week: 'Semana 15' };
-          }
-          if (match.knockout === 'qf-4' && !match.played && match.homeTeam === 'MecaFutsal' && match.awayTeam === 'Mante FC' && match.date === '2026-11-11') {
-            return { ...match, date: '2026-11-06', week: 'Semana 14' };
+          if (match.knockout === 'qf-4' && !match.played) {
+            return { ...match, homeTeam: 'MecaFutsal', awayTeam: 'Mante FC', date: '2026-11-11', time: '11:30 a.m.', week: 'Semana 15' };
           }
           return match;
         });
